@@ -643,8 +643,20 @@ object EarbudAdapterRegistry {
     fun resolve(
         identity: EarbudIdentity,
         disabledAdapterIds: Set<String> = emptySet(),
+        selectedAdapterId: String? = null,
     ): EarbudAdapter? {
         if (PlatformReservedHeadsetPolicy.reserves(identity)) return null
+        if (identity.standardHeadset && selectedAdapterId != null) {
+            catalogRegistrations
+                .firstOrNull { registration ->
+                    registration.descriptor.id == selectedAdapterId &&
+                        registration.descriptor.kind == EarbudAdapterKind.MODEL &&
+                        selectedAdapterId !in disabledAdapterIds
+                }
+                ?.factory
+                ?.invoke()
+                ?.let { return it }
+        }
         return initialRegistrations.asSequence()
             .filterNot { it.descriptor.id in disabledAdapterIds }
             .map { it.factory() }
@@ -654,7 +666,8 @@ object EarbudAdapterRegistry {
     fun forIntegration(
         identity: EarbudIdentity,
         disabledAdapterIds: Set<String> = emptySet(),
-    ): EarbudAdapter? = resolve(identity, disabledAdapterIds)
+        selectedAdapterId: String? = null,
+    ): EarbudAdapter? = resolve(identity, disabledAdapterIds, selectedAdapterId)
         ?.takeIf(EarbudAdapter::integrationEnabled)
 
     private fun requireUniqueIds(registrations: List<Registration>) {

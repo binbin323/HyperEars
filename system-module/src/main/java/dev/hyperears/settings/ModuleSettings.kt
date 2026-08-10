@@ -12,6 +12,8 @@ data class ModuleSettings(
     val modulePaused: Boolean = false,
     val diagnosticLogging: Boolean = false,
     val disabledAdapterIds: Set<String> = emptySet(),
+    /** Optional concrete adapter selected by the user instead of automatic name matching. */
+    val selectedAdapterId: String? = null,
 )
 
 /**
@@ -29,6 +31,7 @@ object ModuleSettingsStore {
     private const val MODULE_PAUSED = "module_paused"
     private const val DIAGNOSTIC_LOGGING = "diagnostic_logging"
     private const val DISABLED_ADAPTER_IDS = "disabled_adapter_ids"
+    private const val SELECTED_ADAPTER_ID = "selected_adapter_id"
     private const val REMOTE_MIGRATION_COMPLETE = "remote_migration_complete"
     private const val REMOTE_WRITE_PENDING = "remote_write_pending"
 
@@ -41,6 +44,7 @@ object ModuleSettingsStore {
             .getStringSet(DISABLED_ADAPTER_IDS, emptySet())
             .orEmpty()
             .toSet(),
+        selectedAdapterId = preferences.getString(SELECTED_ADAPTER_ID, null),
     )
 
     fun write(preferences: SharedPreferences, settings: ModuleSettings): Boolean =
@@ -50,6 +54,7 @@ object ModuleSettingsStore {
             .putBoolean(MODULE_PAUSED, settings.modulePaused)
             .putBoolean(DIAGNOSTIC_LOGGING, settings.diagnosticLogging)
             .putStringSet(DISABLED_ADAPTER_IDS, settings.disabledAdapterIds.toRemotePreferencesSet())
+            .putString(SELECTED_ADAPTER_ID, settings.selectedAdapterId)
             .commit()
 
     fun readLocal(context: Context): ModuleSettings = read(localPreferences(context))
@@ -98,6 +103,7 @@ object ModuleSettingsStore {
         MODULE_PAUSED,
         DIAGNOSTIC_LOGGING,
         DISABLED_ADAPTER_IDS,
+        SELECTED_ADAPTER_ID,
     )
 }
 

@@ -223,7 +223,10 @@ internal object EarbudSessionService {
         private fun applySettings(settings: ModuleSettings) {
             connectionManager.setModulePaused(settings.modulePaused)
             connectionManager.updateExternalControlEnabled(settings.yieldToVendorControlApp)
-            connectionManager.updateDisabledAdapters(settings.disabledAdapterIds)
+            connectionManager.updateAdapterPolicy(
+                adapterIds = settings.disabledAdapterIds,
+                selectedId = settings.selectedAdapterId,
+            )
         }
     }
 

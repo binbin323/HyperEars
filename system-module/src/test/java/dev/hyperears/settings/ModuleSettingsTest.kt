@@ -14,6 +14,7 @@ class ModuleSettingsTest {
         assertFalse(defaults.preferVendorControlApp)
         assertFalse(defaults.yieldToVendorControlApp)
         assertTrue(defaults.disabledAdapterIds.isEmpty())
+        assertEquals(null, defaults.selectedAdapterId)
     }
 
     @Test

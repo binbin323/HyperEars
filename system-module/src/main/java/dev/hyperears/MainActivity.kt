@@ -350,6 +350,9 @@ class MainActivity : ComponentActivity() {
                                 updated.disabledAdapterIds.sorted().joinToString(","),
                         )
                     }
+                    if (previous.selectedAdapterId != updated.selectedAdapterId) {
+                        add("selectedAdapter=${updated.selectedAdapterId ?: "automatic"}")
+                    }
                 }.joinToString(separator = " · "),
             )
         }

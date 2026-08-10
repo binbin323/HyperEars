@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -25,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -62,6 +64,7 @@ enum class SettingsDestination {
 @Composable
 fun SettingsScreen(
     settings: ModuleSettings,
+    adapterGroups: List<EarbudAdapterGroup>,
     rootAvailable: Boolean?,
     rootActionState: RootActionState,
     onSettingsChanged: (ModuleSettings) -> Unit,
@@ -70,7 +73,20 @@ fun SettingsScreen(
 ) {
     HyperEarsPage(title = "设置") { pagePadding, scrollBehavior ->
         var pendingRootAction by remember { mutableStateOf<RootAction?>(null) }
+        var showModelPicker by rememberSaveable { mutableStateOf(false) }
         val listState = rememberLazyListState()
+        val selectableModels = remember(adapterGroups) {
+            adapterGroups.flatMap { group ->
+                group.adapters
+                    .filter { it.kind == EarbudAdapterKind.MODEL }
+                    .map { SelectableAdapterModel(group.displayName, it) }
+            }
+        }
+        val selectedModelName = selectableModels
+            .firstOrNull { it.adapter.id == settings.selectedAdapterId }
+            ?.adapter
+            ?.displayName
+            ?: "自动识别"
 
         LazyColumn(
             state = listState,
@@ -88,6 +104,12 @@ fun SettingsScreen(
         ) {
             item(key = "preferences") {
                 SettingsGroupCard {
+                    NavigationPreference(
+                        title = "自选耳机型号",
+                        detail = selectedModelName,
+                        onClick = { showModelPicker = true },
+                    )
+                    PreferenceDivider()
                     TogglePreference(
                         title = "暂停模块",
                         detail = "停用第三方耳机集成。",
@@ -178,7 +200,100 @@ fun SettingsScreen(
                 },
             )
         }
+
+        if (showModelPicker) {
+            HeadsetModelPickerDialog(
+                models = selectableModels,
+                selectedAdapterId = settings.selectedAdapterId,
+                onSelected = { adapterId ->
+                    val disabled = if (adapterId == null) {
+                        settings.disabledAdapterIds
+                    } else {
+                        settings.disabledAdapterIds - adapterId
+                    }
+                    onSettingsChanged(
+                        settings.copy(
+                            selectedAdapterId = adapterId,
+                            disabledAdapterIds = disabled,
+                        ),
+                    )
+                    showModelPicker = false
+                },
+                onDismiss = { showModelPicker = false },
+            )
+        }
     }
+}
+
+private data class SelectableAdapterModel(
+    val groupName: String,
+    val adapter: EarbudAdapterDescriptor,
+)
+
+@Composable
+private fun HeadsetModelPickerDialog(
+    models: List<SelectableAdapterModel>,
+    selectedAdapterId: String?,
+    onSelected: (String?) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("自选耳机型号") },
+        text = {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 480.dp),
+            ) {
+                item(key = "automatic") {
+                    ModelPickerRow(
+                        title = "自动识别",
+                        detail = "根据蓝牙名称与设备信息匹配",
+                        selected = selectedAdapterId == null,
+                        onClick = { onSelected(null) },
+                    )
+                }
+                items(
+                    items = models,
+                    key = { it.adapter.id },
+                ) { model ->
+                    ModelPickerRow(
+                        title = model.adapter.displayName,
+                        detail = model.groupName,
+                        selected = selectedAdapterId == model.adapter.id,
+                        onClick = { onSelected(model.adapter.id) },
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("取消")
+            }
+        },
+    )
+}
+
+@Composable
+private fun ModelPickerRow(
+    title: String,
+    detail: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    ListItem(
+        headlineContent = { Text(title) },
+        supportingContent = { Text(detail) },
+        leadingContent = {
+            RadioButton(
+                selected = selected,
+                onClick = null,
+            )
+        },
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        modifier = Modifier.clickable(onClick = onClick),
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -312,7 +427,11 @@ fun AdapterSettingsScreen(
                                         settings.disabledAdapterIds + row.adapterIds
                                     }
                                     onSettingsChanged(
-                                        settings.copy(disabledAdapterIds = disabled),
+                                        settings.copy(
+                                            disabledAdapterIds = disabled,
+                                            selectedAdapterId = settings.selectedAdapterId
+                                                ?.takeUnless(disabled::contains),
+                                        ),
                                     )
                                 },
                                 onClick = {
@@ -359,7 +478,11 @@ fun AdapterSettingsScreen(
                                         settings.disabledAdapterIds + row.adapter.id
                                     }
                                     onSettingsChanged(
-                                        settings.copy(disabledAdapterIds = disabled),
+                                        settings.copy(
+                                            disabledAdapterIds = disabled,
+                                            selectedAdapterId = settings.selectedAdapterId
+                                                ?.takeUnless(disabled::contains),
+                                        ),
                                     )
                                 },
                             )

@@ -91,6 +91,7 @@ internal class BluetoothProcessHook : HookContext() {
         val earbudAdapter = EarbudAdapterRegistry.forIntegration(
             identity = identity,
             disabledAdapterIds = ModuleSettingsRuntime.current.disabledAdapterIds,
+            selectedAdapterId = ModuleSettingsRuntime.current.selectedAdapterId,
         )
         if (earbudAdapter == null) {
             EarbudSessionService.observeDevice(device, identity)

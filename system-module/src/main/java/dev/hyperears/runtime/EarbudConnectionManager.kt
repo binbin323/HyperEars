@@ -79,6 +79,7 @@ internal class EarbudConnectionManager(
     private var externalControlEnabled = true
     private var modulePaused = false
     private var disabledAdapterIds: Set<String> = emptySet()
+    private var selectedAdapterId: String? = null
 
     @Volatile
     private var closed = false
@@ -182,7 +183,11 @@ internal class EarbudConnectionManager(
         val adapter = synchronized(lifecycleLock) {
             if (closed || modulePaused || key in systemOwnedAddresses) return false
             observedDevices[key] = ObservedDevice(device, identity)
-            EarbudAdapterRegistry.forIntegration(identity, disabledAdapterIds)
+            EarbudAdapterRegistry.forIntegration(
+                identity = identity,
+                disabledAdapterIds = disabledAdapterIds,
+                selectedAdapterId = selectedAdapterId,
+            )
         } ?: return false
         return registerDevice(device, identity, adapter)
     }
@@ -267,12 +272,15 @@ internal class EarbudConnectionManager(
         }
     }
 
-    /** Re-resolves active devices against the same ordered Registry after a policy change. */
-    fun updateDisabledAdapters(adapterIds: Set<String>) {
+    /** Re-resolves active devices after the enabled set or manual model selection changes. */
+    fun updateAdapterPolicy(adapterIds: Set<String>, selectedId: String?) {
         val normalized = adapterIds.toSet()
         val changes = synchronized(lifecycleLock) {
-            if (closed || disabledAdapterIds == normalized) return
+            if (closed ||
+                (disabledAdapterIds == normalized && selectedAdapterId == selectedId)
+            ) return
             disabledAdapterIds = normalized
+            selectedAdapterId = selectedId
             if (modulePaused) return
 
             val decisions = observedDevices.values.mapNotNull { observed ->
@@ -282,6 +290,7 @@ internal class EarbudConnectionManager(
                 val replacement = EarbudAdapterRegistry.forIntegration(
                     identity = observed.identity,
                     disabledAdapterIds = normalized,
+                    selectedAdapterId = selectedId,
                 )
                 if (replacement?.id == record?.session?.adapter?.id) {
                     null

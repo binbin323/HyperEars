@@ -89,6 +89,35 @@ class EarbudAdapterHierarchyTest {
     }
 
     @Test
+    fun selectedConcreteModelOverridesAutomaticNameMatching() {
+        val adapter = EarbudAdapterRegistry.resolve(
+            identity = identity("vivo TWS Air3 Pro", standard = true),
+            selectedAdapterId = StarRingUltraAdapter.ID,
+        )
+
+        assertTrue(adapter is StarRingUltraAdapter)
+    }
+
+    @Test
+    fun disabledOrUnknownManualSelectionFallsBackToAutomaticMatching() {
+        val identity = identity("vivo TWS Air3 Pro", standard = true)
+
+        assertTrue(
+            EarbudAdapterRegistry.resolve(
+                identity = identity,
+                disabledAdapterIds = setOf(StarRingUltraAdapter.ID),
+                selectedAdapterId = StarRingUltraAdapter.ID,
+            ) is VivoTwsAir3ProAdapter,
+        )
+        assertTrue(
+            EarbudAdapterRegistry.resolve(
+                identity = identity,
+                selectedAdapterId = "missing-adapter",
+            ) is VivoTwsAir3ProAdapter,
+        )
+    }
+
+    @Test
     fun everyPrivateAdapterStartsWithTheSystemBatteryFallback() {
         EarbudAdapterRegistry.adapters
             .filter(EarbudAdapter::privateProtocolRequired)

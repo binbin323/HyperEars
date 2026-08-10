@@ -153,6 +153,7 @@ fun HyperEarsApp(
 
                 1 -> SettingsScreen(
                     settings = settings,
+                    adapterGroups = EarbudAdapterRegistry.groups,
                     rootAvailable = rootAvailable,
                     rootActionState = rootActionState,
                     onSettingsChanged = onSettingsChanged,
