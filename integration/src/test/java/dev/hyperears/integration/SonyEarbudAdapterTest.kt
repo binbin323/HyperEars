@@ -54,6 +54,25 @@ class SonyEarbudAdapterTest {
     }
 
     @Test
+    fun sonyOuiPrefixesSelectTheConservativeFamilyFallback() {
+        listOf(
+            "00:13:A9:00:00:01",
+            "ac:9e:17:00:00:02",
+            "54:C9:DF:00:00:03",
+        ).forEach { address ->
+            val adapter = EarbudAdapterRegistry.resolve(
+                identity(
+                    name = "Wireless Audio",
+                    address = address,
+                ),
+            )
+
+            assertEquals(SonyEarbudAdapter.ID, adapter?.id)
+            assertFalse(requireNotNull(adapter).privateProtocolRequired)
+        }
+    }
+
+    @Test
     fun sharedIap2UuidNeverActsAsSonyOrBoseIdentity() {
         val identity = identity(
             name = "Wireless Audio",
@@ -203,9 +222,11 @@ class SonyEarbudAdapterTest {
     private fun identity(
         name: String,
         services: Set<String> = emptySet(),
+        address: String? = null,
     ): EarbudIdentity = EarbudIdentity(
         deviceName = name,
         standardHeadset = true,
+        deviceAddress = address,
         serviceUuids = services,
     )
 

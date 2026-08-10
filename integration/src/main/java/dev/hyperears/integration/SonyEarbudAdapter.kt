@@ -2,6 +2,7 @@ package dev.hyperears.integration
 
 import dev.hyperears.protocol.sony.SonyHeadphonesWireCodec
 import java.util.ArrayDeque
+import java.util.Locale
 
 /** Standard Bluetooth fallback for Sony headsets outside a confirmed private-protocol family. */
 open class SonyEarbudAdapter : StandardEarbudAdapter() {
@@ -11,7 +12,7 @@ open class SonyEarbudAdapter : StandardEarbudAdapter() {
     override val controlApps: List<ControlAppSpec> = listOf(ControlAppCatalog.sonySoundConnect)
 
     override fun matches(identity: EarbudIdentity): Boolean =
-        identity.isEligibleSonyHeadset() && identity.hasSonyName()
+        identity.isEligibleSonyHeadset() && identity.hasSonyIdentity()
 
     companion object {
         const val ID = "sony-family"
@@ -674,8 +675,20 @@ private fun EarbudIdentity.isEligibleSonyHeadset(): Boolean =
 private fun EarbudIdentity.normalizedSonyName(): String =
     deviceName.orEmpty().lowercase().filter(Char::isLetterOrDigit)
 
-private fun EarbudIdentity.hasSonyName(): Boolean =
-    normalizedSonyName().let { name -> name.startsWith("sony") || hasSonyModelName() }
+private fun EarbudIdentity.hasSonyIdentity(): Boolean =
+    normalizedSonyName().let { name -> name.startsWith("sony") || hasSonyModelName() } ||
+        hasSonyOui()
+
+private fun EarbudIdentity.hasSonyOui(): Boolean =
+    deviceAddress
+        ?.uppercase(Locale.ROOT)
+        ?.take(8) in SONY_OUIS
+
+private val SONY_OUIS = setOf(
+    "00:13:A9",
+    "AC:9E:17",
+    "54:C9:DF",
+)
 
 private fun EarbudIdentity.hasSonyModelName(): Boolean = sonyProductName().let { name ->
     name.startsWith("wh") ||
