@@ -184,6 +184,25 @@ class EarbudAdapterHierarchyTest {
     }
 
     @Test
+    fun appleOuiPrefixesIdentifyTheFamilyAndRemainPlatformReserved() {
+        listOf(
+            "AC:DE:48:00:00:01",
+            "f0:18:98:00:00:02",
+            "64:9E:31:00:00:03",
+        ).forEach { address ->
+            val identity = EarbudIdentity(
+                deviceName = "Renamed headset",
+                standardHeadset = true,
+                deviceAddress = address,
+            )
+
+            assertTrue("$address should identify Apple", AppleAirPodsAdapter().matches(identity))
+            assertTrue("$address should remain platform-reserved", PlatformReservedHeadsetPolicy.reserves(identity))
+            assertNull(EarbudAdapterRegistry.resolve(identity))
+        }
+    }
+
+    @Test
     fun unconfirmedFamilyKeepsSystemBatteryWithoutPublishingPrivateNoiseControls() {
         val vivo = VivoEarbudAdapter()
         val oppo = OppoEarbudAdapter()

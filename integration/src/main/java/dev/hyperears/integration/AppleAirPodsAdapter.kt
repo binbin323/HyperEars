@@ -1,8 +1,9 @@
 package dev.hyperears.integration
 
 import dev.hyperears.protocol.apple.AppleAapWireCodec
+import java.util.Locale
 
-/** Apple AAP family selected by its published SDP service UUID, never by the display name alone. */
+/** Apple AAP family selected by its published SDP service UUID or an observed Apple OUI. */
 open class AppleAirPodsAdapter : StandardEarbudAdapter() {
     override val id: String = ID
     override val displayName: String = "Apple AirPods"
@@ -21,7 +22,10 @@ open class AppleAirPodsAdapter : StandardEarbudAdapter() {
     )
 
     override fun matches(identity: EarbudIdentity): Boolean =
-        !identity.nativeSystemEarbud && identity.serviceUuids.any(AAP_SERVICE_UUIDS::contains)
+        !identity.nativeSystemEarbud && (
+            identity.serviceUuids.any(AAP_SERVICE_UUIDS::contains) ||
+                hasAppleOui(identity.deviceAddress)
+            )
 
     override fun createProtocolSession(): ProtocolSession = AppleAapProtocolSession()
 
@@ -32,6 +36,17 @@ open class AppleAirPodsAdapter : StandardEarbudAdapter() {
         val AAP_SERVICE_UUIDS = setOf(
             AAP_SERVICE_UUID,
             "2a72e02b-7b99-778f-014d-ad0b7221ec74",
+        )
+
+        internal fun hasAppleOui(address: String?): Boolean =
+            address
+                ?.uppercase(Locale.ROOT)
+                ?.take(8) in APPLE_OUIS
+
+        private val APPLE_OUIS = setOf(
+            "AC:DE:48",
+            "F0:18:98",
+            "64:9E:31",
         )
     }
 }

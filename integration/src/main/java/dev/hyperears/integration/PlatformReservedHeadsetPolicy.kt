@@ -4,8 +4,8 @@ package dev.hyperears.integration
  * Headsets deliberately reserved for platform-native integrations.
  *
  * This policy runs before the Adapter registry, including before the standard Bluetooth fallback.
- * Strong Apple AAP UUID evidence is preferred; the AirPods name marker is a conservative fallback
- * for devices whose SDP UUID cache is not populated when A2DP first connects.
+ * Strong Apple AAP UUID or OUI evidence is preferred; the AirPods name marker is a conservative
+ * fallback for devices whose SDP UUID cache is not populated when A2DP first connects.
  */
 object PlatformReservedHeadsetPolicy {
     fun reserves(identity: EarbudIdentity): Boolean {
@@ -19,7 +19,8 @@ object PlatformReservedHeadsetPolicy {
                 it.equals(uuid, ignoreCase = true)
             }
         }
-        return appleName || appleService
+        val appleAddress = AppleAirPodsAdapter.hasAppleOui(identity.deviceAddress)
+        return appleName || appleService || appleAddress
     }
 
     private val APPLE_NAME_MARKERS = setOf("airpods")
