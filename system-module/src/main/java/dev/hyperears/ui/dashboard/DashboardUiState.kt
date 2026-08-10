@@ -7,6 +7,9 @@ import dev.hyperears.integration.ControlOwnership
 import dev.hyperears.integration.PrivateTransportState
 import dev.hyperears.integration.ProtocolHandshakeState
 import dev.hyperears.integration.SystemProfileState
+import dev.hyperears.R
+import dev.hyperears.ui.UiText
+import dev.hyperears.ui.uiText
 import java.util.Locale
 
 data class DeviceSessionSnapshot(
@@ -51,26 +54,34 @@ data class DeviceSessionSnapshot(
     val miLinkLifecycle: List<DeviceLifecycleStage>
         get() = listOf(
             DeviceLifecycleStage(
-                label = "状态接收",
-                value = if (bridgeObserved) "已接收" else "未观测",
+                label = uiText(R.string.stage_state_received),
+                value = uiText(
+                    if (bridgeObserved) R.string.stage_received else R.string.stage_not_observed,
+                ),
                 complete = bridgeObserved,
                 active = state.connected && !bridgeObserved,
             ),
             DeviceLifecycleStage(
-                label = "身份查询",
-                value = if (identityQueried) "已调用" else "未观测",
+                label = uiText(R.string.stage_identity_query),
+                value = uiText(
+                    if (identityQueried) R.string.stage_called else R.string.stage_not_observed,
+                ),
                 complete = identityQueried,
                 active = bridgeObserved && !identityQueried,
             ),
             DeviceLifecycleStage(
-                label = "卡片能力",
-                value = if (capabilitiesQueried) "已调用" else "未观测",
+                label = uiText(R.string.stage_card_capabilities),
+                value = uiText(
+                    if (capabilitiesQueried) R.string.stage_called else R.string.stage_not_observed,
+                ),
                 complete = capabilitiesQueried,
                 active = identityQueried && !capabilitiesQueried,
             ),
             DeviceLifecycleStage(
-                label = "状态通知",
-                value = if (runtimeNotified) "已触发" else "未观测",
+                label = uiText(R.string.stage_state_notification),
+                value = uiText(
+                    if (runtimeNotified) R.string.stage_triggered else R.string.stage_not_observed,
+                ),
                 complete = runtimeNotified,
                 active = false,
             ),
@@ -115,23 +126,23 @@ data class DashboardUiState(
         get() = sessions.count { it.capabilitiesQueried }
 }
 
-enum class DevicePhase(val label: String) {
-    SYSTEM_DISCONNECTED("系统音频未连接"),
-    EXTERNAL_CONTROL_APP("专有控制 App 运行中"),
-    TRANSPORT_CONNECTING("私有传输连接中"),
-    TRANSPORT_RECOVERING("私有传输恢复中"),
-    TRANSPORT_DORMANT("私有传输已休眠"),
-    PROTOCOL_CONFIRMING("协议确认中"),
-    PROTOCOL_REJECTED("协议确认失败"),
-    WAITING_FOR_MILINK("等待 MiLink 接收"),
-    STATE_ACCEPTED("MiLink 已接收状态"),
-    IDENTITY_QUERIED("MiLink 已查询身份"),
-    CAPABILITIES_QUERIED("MiLink 已查询能力"),
+enum class DevicePhase(val labelRes: Int) {
+    SYSTEM_DISCONNECTED(R.string.phase_system_disconnected),
+    EXTERNAL_CONTROL_APP(R.string.phase_external_control_app),
+    TRANSPORT_CONNECTING(R.string.phase_transport_connecting),
+    TRANSPORT_RECOVERING(R.string.phase_transport_recovering),
+    TRANSPORT_DORMANT(R.string.phase_transport_dormant),
+    PROTOCOL_CONFIRMING(R.string.phase_protocol_confirming),
+    PROTOCOL_REJECTED(R.string.phase_protocol_rejected),
+    WAITING_FOR_MILINK(R.string.phase_waiting_for_milink),
+    STATE_ACCEPTED(R.string.phase_state_accepted),
+    IDENTITY_QUERIED(R.string.phase_identity_queried),
+    CAPABILITIES_QUERIED(R.string.phase_capabilities_queried),
 }
 
 data class DeviceLifecycleStage(
-    val label: String,
-    val value: String,
+    val label: UiText,
+    val value: UiText,
     val complete: Boolean,
     val active: Boolean,
 )

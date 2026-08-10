@@ -21,6 +21,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import dev.hyperears.R
 import dev.hyperears.integration.EarbudAdapterRegistry
 import dev.hyperears.root.RootAction
@@ -37,14 +38,14 @@ import kotlinx.coroutines.launch
 
 private data class AppPage(
     val id: String,
-    val label: String,
+    val labelRes: Int,
     val iconRes: Int,
 )
 
 private val appPages = listOf(
-    AppPage("dashboard", "主页", R.drawable.ic_dashboard),
-    AppPage("settings", "设置", R.drawable.ic_settings),
-    AppPage("about", "关于", R.drawable.ic_info_outline),
+    AppPage("dashboard", R.string.nav_dashboard, R.drawable.ic_dashboard),
+    AppPage("settings", R.string.nav_settings, R.drawable.ic_settings),
+    AppPage("about", R.string.nav_about, R.drawable.ic_info_outline),
 )
 
 private const val TOP_LEVEL_PAGE_PRELOAD_COUNT = 1
@@ -116,6 +117,7 @@ fun HyperEarsApp(
         bottomBar = {
             NavigationBar {
                 appPages.forEachIndexed { index, page ->
+                    val label = stringResource(page.labelRes)
                     NavigationBarItem(
                         selected = selectedPage == index,
                         onClick = {
@@ -126,10 +128,10 @@ fun HyperEarsApp(
                         icon = {
                             Icon(
                                 painter = painterResource(page.iconRes),
-                                contentDescription = page.label,
+                                contentDescription = label,
                             )
                         },
-                        label = { Text(page.label) },
+                        label = { Text(label) },
                     )
                 }
             }

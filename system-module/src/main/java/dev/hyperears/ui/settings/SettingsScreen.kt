@@ -46,6 +46,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
+import dev.hyperears.R
 import dev.hyperears.integration.EarbudAdapterDescriptor
 import dev.hyperears.integration.EarbudAdapterGroup
 import dev.hyperears.integration.EarbudAdapterKind
@@ -71,7 +74,7 @@ fun SettingsScreen(
     onRunRootAction: (RootAction) -> Unit,
     onOpenDebug: () -> Unit,
 ) {
-    HyperEarsPage(title = "设置") { pagePadding, scrollBehavior ->
+    HyperEarsPage(title = stringResource(R.string.settings_title)) { pagePadding, scrollBehavior ->
         var pendingRootAction by remember { mutableStateOf<RootAction?>(null) }
         var showModelPicker by rememberSaveable { mutableStateOf(false) }
         val listState = rememberLazyListState()
@@ -79,14 +82,14 @@ fun SettingsScreen(
             adapterGroups.flatMap { group ->
                 group.adapters
                     .filter { it.kind == EarbudAdapterKind.MODEL }
-                    .map { SelectableAdapterModel(group.displayName, it) }
+                    .map { SelectableAdapterModel(group.id, group.displayName, it) }
             }
         }
         val selectedModelName = selectableModels
             .firstOrNull { it.adapter.id == settings.selectedAdapterId }
             ?.adapter
-            ?.displayName
-            ?: "自动识别"
+            ?.localizedDisplayName()
+            ?: stringResource(R.string.settings_headset_model_auto)
 
         LazyColumn(
             state = listState,
@@ -105,14 +108,14 @@ fun SettingsScreen(
             item(key = "preferences") {
                 SettingsGroupCard {
                     NavigationPreference(
-                        title = "自选耳机型号",
+                        title = stringResource(R.string.settings_headset_model),
                         detail = selectedModelName,
                         onClick = { showModelPicker = true },
                     )
                     PreferenceDivider()
                     TogglePreference(
-                        title = "暂停模块",
-                        detail = "停用第三方耳机集成。",
+                        title = stringResource(R.string.settings_pause_module),
+                        detail = stringResource(R.string.settings_pause_module_detail),
                         checked = settings.modulePaused,
                         onCheckedChange = {
                             onSettingsChanged(settings.copy(modulePaused = it))
@@ -120,8 +123,8 @@ fun SettingsScreen(
                     )
                     PreferenceDivider()
                     TogglePreference(
-                        title = "打开厂商设置",
-                        detail = "需勾选对应厂商应用作用域。",
+                        title = stringResource(R.string.settings_open_vendor_settings),
+                        detail = stringResource(R.string.settings_open_vendor_settings_detail),
                         checked = settings.preferVendorControlApp,
                         onCheckedChange = {
                             onSettingsChanged(settings.copy(preferVendorControlApp = it))
@@ -129,8 +132,8 @@ fun SettingsScreen(
                     )
                     PreferenceDivider()
                     TogglePreference(
-                        title = "运行时退避",
-                        detail = "厂商控制 App 运行时自动让出耳机私有控制通道，需勾选对应作用域。",
+                        title = stringResource(R.string.settings_runtime_yield),
+                        detail = stringResource(R.string.settings_runtime_yield_detail),
                         checked = settings.yieldToVendorControlApp,
                         onCheckedChange = {
                             onSettingsChanged(settings.copy(yieldToVendorControlApp = it))
@@ -138,8 +141,8 @@ fun SettingsScreen(
                     )
                     PreferenceDivider()
                     NavigationPreference(
-                        title = "调试",
-                        detail = "适配器、详细日志与日志导出。",
+                        title = stringResource(R.string.settings_debug),
+                        detail = stringResource(R.string.settings_debug_detail),
                         onClick = onOpenDebug,
                     )
                 }
@@ -149,9 +152,9 @@ fun SettingsScreen(
                     if (rootAvailable != true) {
                         Text(
                             text = if (rootAvailable == false) {
-                                "需要 Root 权限"
+                                stringResource(R.string.settings_root_required)
                             } else {
-                                "正在检查 Root 权限"
+                                stringResource(R.string.settings_root_checking)
                             },
                             modifier = Modifier.padding(horizontal = 4.dp),
                             style = MaterialTheme.typography.bodySmall,
@@ -161,9 +164,9 @@ fun SettingsScreen(
                     SettingsGroupCard {
                         RootAction.entries.forEachIndexed { index, action ->
                             ActionPreference(
-                                title = action.title,
-                                detail = action.detail,
-                                actionLabel = "执行",
+                                title = stringResource(action.titleRes),
+                                detail = stringResource(action.detailRes),
+                                actionLabel = stringResource(R.string.action_execute),
                                 available = rootAvailable == true,
                                 running = rootActionState is RootActionState.Running &&
                                     rootActionState.action == action,
@@ -181,8 +184,8 @@ fun SettingsScreen(
         pendingRootAction?.let { action ->
             AlertDialog(
                 onDismissRequest = { pendingRootAction = null },
-                title = { Text(action.title) },
-                text = { Text(action.detail) },
+                title = { Text(stringResource(action.titleRes)) },
+                text = { Text(stringResource(action.detailRes)) },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -190,12 +193,12 @@ fun SettingsScreen(
                             onRunRootAction(action)
                         },
                     ) {
-                        Text("执行")
+                        Text(stringResource(R.string.action_execute))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { pendingRootAction = null }) {
-                        Text("取消")
+                        Text(stringResource(R.string.action_cancel))
                     }
                 },
             )
@@ -226,6 +229,7 @@ fun SettingsScreen(
 }
 
 private data class SelectableAdapterModel(
+    val groupId: String,
     val groupName: String,
     val adapter: EarbudAdapterDescriptor,
 )
@@ -239,7 +243,7 @@ private fun HeadsetModelPickerDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("自选耳机型号") },
+        title = { Text(stringResource(R.string.settings_headset_model)) },
         text = {
             LazyColumn(
                 modifier = Modifier
@@ -248,8 +252,8 @@ private fun HeadsetModelPickerDialog(
             ) {
                 item(key = "automatic") {
                     ModelPickerRow(
-                        title = "自动识别",
-                        detail = "根据蓝牙名称与设备信息匹配",
+                        title = stringResource(R.string.settings_headset_model_auto),
+                        detail = stringResource(R.string.settings_headset_model_auto_detail),
                         selected = selectedAdapterId == null,
                         onClick = { onSelected(null) },
                     )
@@ -259,8 +263,8 @@ private fun HeadsetModelPickerDialog(
                     key = { it.adapter.id },
                 ) { model ->
                     ModelPickerRow(
-                        title = model.adapter.displayName,
-                        detail = model.groupName,
+                        title = model.adapter.localizedDisplayName(),
+                        detail = localizedAdapterGroupName(model.groupId, model.groupName),
                         selected = selectedAdapterId == model.adapter.id,
                         onClick = { onSelected(model.adapter.id) },
                     )
@@ -269,7 +273,7 @@ private fun HeadsetModelPickerDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("取消")
+                Text(stringResource(R.string.action_cancel))
             }
         },
     )
@@ -306,7 +310,10 @@ fun DebugSettingsScreen(
     onOpenAdapters: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
-    HyperEarsPage(title = "调试", onNavigateBack = onNavigateBack) { pagePadding, scrollBehavior ->
+    HyperEarsPage(
+        title = stringResource(R.string.settings_debug),
+        onNavigateBack = onNavigateBack,
+    ) { pagePadding, scrollBehavior ->
         val listState = rememberLazyListState()
         LazyColumn(
             state = listState,
@@ -328,9 +335,9 @@ fun DebugSettingsScreen(
                     if (rootAvailable != true) {
                         Text(
                             text = if (rootAvailable == false) {
-                                "导出 LSPosed 日志需要 Root 权限"
+                                stringResource(R.string.settings_debug_export_root_required)
                             } else {
-                                "正在检查 Root 权限"
+                                stringResource(R.string.settings_root_checking)
                             },
                             modifier = Modifier.padding(horizontal = 4.dp),
                             style = MaterialTheme.typography.bodySmall,
@@ -339,14 +346,14 @@ fun DebugSettingsScreen(
                     }
                     SettingsGroupCard {
                         NavigationPreference(
-                            title = "适配器",
-                            detail = "按品牌管理具体型号与家族回退。",
+                            title = stringResource(R.string.settings_adapters),
+                            detail = stringResource(R.string.settings_adapters_detail),
                             onClick = onOpenAdapters,
                         )
                         PreferenceDivider()
                         TogglePreference(
-                            title = "详细日志",
-                            detail = "记录模块生命周期、协议与退避状态；需在 LSPosed 中允许详细日志并输出到守护进程。",
+                            title = stringResource(R.string.settings_detailed_logging),
+                            detail = stringResource(R.string.settings_detailed_logging_detail),
                             checked = settings.diagnosticLogging,
                             onCheckedChange = {
                                 onSettingsChanged(settings.copy(diagnosticLogging = it))
@@ -354,9 +361,9 @@ fun DebugSettingsScreen(
                         )
                         PreferenceDivider()
                         ActionPreference(
-                            title = "导出日志",
-                            detail = "导出 LSPosed 模块日志与应用操作日志。",
-                            actionLabel = "导出",
+                            title = stringResource(R.string.settings_export_logs),
+                            detail = stringResource(R.string.settings_export_logs_detail),
+                            actionLabel = stringResource(R.string.action_export),
                             available = rootAvailable == true,
                             running = false,
                             onClick = onExportLogs,
@@ -376,7 +383,10 @@ fun AdapterSettingsScreen(
     onSettingsChanged: (ModuleSettings) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
-    HyperEarsPage(title = "适配器", onNavigateBack = onNavigateBack) { pagePadding, scrollBehavior ->
+    HyperEarsPage(
+        title = stringResource(R.string.settings_adapters),
+        onNavigateBack = onNavigateBack,
+    ) { pagePadding, scrollBehavior ->
         val listState = rememberLazyListState()
         var expandedGroupId by rememberSaveable { mutableStateOf<String?>(null) }
         val rows = remember(groups, expandedGroupId) {
@@ -415,7 +425,7 @@ fun AdapterSettingsScreen(
                             },
                         ) {
                             AdapterGroupHeader(
-                                title = group.displayName,
+                                title = localizedAdapterGroupName(group.id, group.displayName),
                                 enabledCount = enabledCount,
                                 totalCount = group.adapters.size,
                                 expanded = row.expanded,
@@ -445,7 +455,7 @@ fun AdapterSettingsScreen(
                         AdapterListSurface(position = AdapterListPosition.MIDDLE) {
                             PreferenceDivider()
                             Text(
-                                text = row.kind.sectionTitle,
+                                text = stringResource(row.kind.sectionTitleRes),
                                 modifier = Modifier.padding(
                                     start = 16.dp,
                                     end = 16.dp,
@@ -468,7 +478,7 @@ fun AdapterSettingsScreen(
                         ) {
                             if (row.showTopDivider) PreferenceDivider()
                             TogglePreference(
-                                title = row.adapter.displayName,
+                                title = row.adapter.localizedDisplayName(),
                                 detail = row.adapter.id,
                                 checked = row.adapter.id !in settings.disabledAdapterIds,
                                 onCheckedChange = { enabled ->
@@ -561,6 +571,33 @@ private fun buildAdapterRows(
     }
 }
 
+@Composable
+private fun localizedAdapterGroupName(groupId: String, fallback: String): String {
+    val resource = when (groupId) {
+        "vivo" -> R.string.brand_vivo
+        "oppo" -> R.string.brand_oppo
+        "starring" -> R.string.brand_starring
+        "bose" -> R.string.brand_bose
+        "edifier" -> R.string.brand_edifier
+        "rose" -> R.string.brand_roseselsa
+        "nicehck" -> R.string.brand_nicehck
+        "moondrop" -> R.string.brand_moondrop
+        "honor" -> R.string.brand_honor
+        "sony" -> R.string.brand_sony
+        "qcy" -> R.string.brand_qcy
+        "standard" -> R.string.brand_generic
+        else -> return fallback
+    }
+    return stringResource(resource)
+}
+
+@Composable
+private fun EarbudAdapterDescriptor.localizedDisplayName(): String = when (id) {
+    "edifier-evo-pro" -> stringResource(R.string.model_edifier_evo)
+    "honor-x5spro" -> stringResource(R.string.model_honor_x5s_pro)
+    else -> displayName
+}
+
 private enum class AdapterListPosition {
     SINGLE,
     TOP,
@@ -599,11 +636,11 @@ private fun AdapterListSurface(
 private val AdapterListPosition.endsGroup: Boolean
     get() = this == AdapterListPosition.SINGLE || this == AdapterListPosition.BOTTOM
 
-private val EarbudAdapterKind.sectionTitle: String
+private val EarbudAdapterKind.sectionTitleRes: Int
     get() = when (this) {
-        EarbudAdapterKind.MODEL -> "具体型号"
-        EarbudAdapterKind.FAMILY -> "家族回退"
-        EarbudAdapterKind.STANDARD -> "标准回退"
+        EarbudAdapterKind.MODEL -> R.string.adapter_section_models
+        EarbudAdapterKind.FAMILY -> R.string.adapter_section_family
+        EarbudAdapterKind.STANDARD -> R.string.adapter_section_standard
     }
 
 @Composable
@@ -627,7 +664,12 @@ private fun AdapterGroupHeader(
         },
         supportingContent = {
             Text(
-                text = "$enabledCount / $totalCount 已启用",
+                text = pluralStringResource(
+                    R.plurals.adapter_enabled_count,
+                    enabledCount,
+                    enabledCount,
+                    totalCount,
+                ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -644,7 +686,13 @@ private fun AdapterGroupHeader(
                 Spacer(Modifier.width(8.dp))
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = if (expanded) "收起" else "展开",
+                    contentDescription = stringResource(
+                        if (expanded) {
+                            R.string.content_description_collapse
+                        } else {
+                            R.string.content_description_expand
+                        },
+                    ),
                     modifier = Modifier.rotate(if (expanded) 90f else 0f),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -784,7 +832,9 @@ private fun ActionPreference(
                 onClick = onClick,
                 enabled = available && !running,
             ) {
-                Text(if (running) "执行中" else actionLabel)
+                Text(
+                    if (running) stringResource(R.string.action_executing) else actionLabel,
+                )
             }
         },
         colors = ListItemDefaults.colors(

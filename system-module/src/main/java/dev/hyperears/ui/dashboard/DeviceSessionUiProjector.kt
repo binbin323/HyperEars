@@ -1,25 +1,28 @@
 package dev.hyperears.ui.dashboard
 
+import dev.hyperears.R
+import dev.hyperears.integration.AdapterResolution
+import dev.hyperears.integration.AdapterSnapshot
 import dev.hyperears.integration.BatteryReading
 import dev.hyperears.integration.BatterySource
 import dev.hyperears.integration.ControlOwnership
-import dev.hyperears.integration.AdapterSnapshot
 import dev.hyperears.integration.HeadsetFormFactor
 import dev.hyperears.integration.NoiseMode
-import dev.hyperears.integration.AdapterResolution
 import dev.hyperears.integration.PrivateTransportState
 import dev.hyperears.integration.ProtocolHandshakeState
 import dev.hyperears.integration.SystemProfileState
 import dev.hyperears.integration.TransportKind
+import dev.hyperears.ui.UiText
+import dev.hyperears.ui.uiText
 
 /** Complete, adapter-agnostic data required to render one dashboard card. */
 data class DeviceSessionUiModel(
-    val deviceName: String,
+    val deviceName: UiText,
     val address: String,
-    val adapterName: String,
+    val adapterName: UiText,
     val adapterId: String,
-    val adapterSummary: String,
-    val controlSummary: String,
+    val adapterSummary: UiText,
+    val controlSummary: UiText,
     val adapterResolved: Boolean,
     val phase: DevicePhase,
     val headsetLifecycle: List<DeviceLinkStage>,
@@ -28,8 +31,8 @@ data class DeviceSessionUiModel(
 )
 
 data class DeviceLinkStage(
-    val label: String,
-    val value: String,
+    val label: UiText,
+    val value: UiText,
     val status: DeviceLinkStatus,
 )
 
@@ -41,27 +44,26 @@ enum class DeviceLinkStatus {
 }
 
 data class DeviceMetric(
-    val label: String,
-    val value: String,
+    val label: UiText,
+    val value: UiText,
 )
 
-/**
- * The UI consumes only the immutable runtime adapter snapshot.
- *
- * Compose receives a stable, generic presentation model. Concrete adapters, transport classes,
- * battery topology and readiness rules never leak into the view hierarchy.
- */
+/** Projects runtime state into resource-backed presentation data without resolving a locale. */
 object DeviceSessionUiProjector {
     fun project(session: DeviceSessionSnapshot): DeviceSessionUiModel {
         val state = session.state
         val adapter = state.adapter
         return DeviceSessionUiModel(
-            deviceName = state.deviceName ?: "未命名耳机",
+            deviceName = state.deviceName?.let(UiText::Dynamic)
+                ?: uiText(R.string.dashboard_unnamed_headset),
             address = state.address ?: "—",
-            adapterName = adapter?.displayName ?: "未解析",
+            adapterName = adapter?.localizedDisplayName()
+                ?: uiText(R.string.dashboard_unresolved),
             adapterId = adapter?.id ?: "—",
-            adapterSummary = adapter?.adapterSummary() ?: "尚未建立 Adapter 快照",
-            controlSummary = adapter?.controlSummary() ?: "能力未知",
+            adapterSummary = adapter?.adapterSummary()
+                ?: uiText(R.string.dashboard_no_adapter_snapshot),
+            controlSummary = adapter?.controlSummary()
+                ?: uiText(R.string.dashboard_capabilities_unknown),
             adapterResolved = adapter != null,
             phase = session.phase,
             headsetLifecycle = headsetLifecycle(session),
@@ -70,13 +72,11 @@ object DeviceSessionUiProjector {
         )
     }
 
-    private fun headsetLifecycle(
-        session: DeviceSessionSnapshot,
-    ): List<DeviceLinkStage> = buildList {
+    private fun headsetLifecycle(session: DeviceSessionSnapshot): List<DeviceLinkStage> = buildList {
         val state = session.state
         add(
             DeviceLinkStage(
-                label = "系统连接",
+                label = uiText(R.string.stage_system_connection),
                 value = state.lifecycle.systemProfile.displayName(),
                 status = if (state.lifecycle.systemProfile == SystemProfileState.CONNECTED) {
                     DeviceLinkStatus.READY
@@ -87,8 +87,10 @@ object DeviceSessionUiProjector {
         )
         add(
             DeviceLinkStage(
-                label = "控制",
-                value = state.lifecycle.externalControlApp?.displayName ?: "HyperEars",
+                label = uiText(R.string.stage_control),
+                value = UiText.Dynamic(
+                    state.lifecycle.externalControlApp?.displayName ?: "HyperEars",
+                ),
                 status = if (state.lifecycle.controlOwnership == ControlOwnership.EXTERNAL_APP) {
                     DeviceLinkStatus.ACTIVE
                 } else {
@@ -98,7 +100,7 @@ object DeviceSessionUiProjector {
         )
         add(
             DeviceLinkStage(
-                label = "私有通道",
+                label = uiText(R.string.stage_private_channel),
                 value = state.lifecycle.privateTransport.displayName(),
                 status = when (state.lifecycle.privateTransport) {
                     PrivateTransportState.NOT_REQUIRED,
@@ -114,7 +116,7 @@ object DeviceSessionUiProjector {
         )
         add(
             DeviceLinkStage(
-                label = "协议",
+                label = uiText(R.string.stage_protocol),
                 value = state.lifecycle.protocolHandshake.displayName(),
                 status = when (state.lifecycle.protocolHandshake) {
                     ProtocolHandshakeState.NOT_REQUIRED,
@@ -138,17 +140,17 @@ object DeviceSessionUiProjector {
                 ?: battery.right.takeIf(BatteryReading::available)
                 ?: battery.case.takeIf(BatteryReading::available)
                 ?: battery.overall
-            add(DeviceMetric("整机", aggregate.displayValue()))
+            add(DeviceMetric(uiText(R.string.metric_device), aggregate.displayValue()))
         } else {
-            add(DeviceMetric("左耳", battery.left.displayValue()))
-            add(DeviceMetric("右耳", battery.right.displayValue()))
-            add(DeviceMetric("充电盒", battery.case.displayValue()))
+            add(DeviceMetric(uiText(R.string.metric_left_earbud), battery.left.displayValue()))
+            add(DeviceMetric(uiText(R.string.metric_right_earbud), battery.right.displayValue()))
+            add(DeviceMetric(uiText(R.string.metric_charging_case), battery.case.displayValue()))
         }
         add(
             DeviceMetric(
-                label = "模式",
+                label = uiText(R.string.metric_mode),
                 value = if (adapter?.capabilities?.noiseControl == false) {
-                    "不支持"
+                    uiText(R.string.value_not_supported)
                 } else {
                     session.state.noiseMode.displayName()
                 },
@@ -156,82 +158,102 @@ object DeviceSessionUiProjector {
         )
     }
 
-    private fun AdapterSnapshot.adapterSummary(): String =
-        "匹配  ${resolution.displayName()}  ·  形态  ${formFactor.displayName()}  ·  " +
-            "电量  ${batterySource.displayName()}  ·  " +
-            "传输  ${transportSummary()}"
+    private fun AdapterSnapshot.adapterSummary(): UiText = uiText(
+        R.string.adapter_summary,
+        resolution.displayName(),
+        formFactor.displayName(),
+        batterySource.displayName(),
+        transportSummary(),
+    )
 
-    private fun AdapterSnapshot.transportSummary(): String {
-        if (!privateProtocolRequired) return "标准 A2DP/HFP"
-        return transportKinds
-            .map { transport ->
-                when (transport) {
-                    TransportKind.RFCOMM -> "RFCOMM"
-                    TransportKind.GATT -> "GATT"
-                    TransportKind.L2CAP -> "L2CAP"
-                }
-            }
-            .distinct()
-            .joinToString(" / ")
-            .ifEmpty { "未声明" }
+    private fun AdapterSnapshot.transportSummary(): UiText {
+        if (!privateProtocolRequired) return UiText.Dynamic("A2DP/HFP")
+        val transports = transportKinds.map { UiText.Dynamic(it.displayName) }.distinct()
+        return if (transports.isEmpty()) {
+            uiText(R.string.value_not_declared)
+        } else {
+            UiText.Joined(transports)
+        }
     }
 
-    private fun AdapterSnapshot.controlSummary(): String {
-        val modeLabels = supportedNoiseModes.map { mode -> mode.displayName() }
+    private fun AdapterSnapshot.controlSummary(): UiText {
+        val modeLabels = supportedNoiseModes.map(NoiseMode::displayName)
         return when {
-            modeLabels.isNotEmpty() -> modeLabels.joinToString(" / ")
-            capabilities.audioHandoff -> "MiLink 流转与系统音量；无私有模式"
-            else -> "无"
+            modeLabels.isNotEmpty() -> UiText.Joined(modeLabels)
+            capabilities.audioHandoff -> uiText(R.string.control_audio_handoff_only)
+            else -> uiText(R.string.value_none)
         }
     }
 }
 
-private fun AdapterResolution.displayName(): String = when (this) {
-    AdapterResolution.STANDARD -> "标准"
-    AdapterResolution.EXACT_MATCH -> "精确"
-    AdapterResolution.FAMILY_MATCH -> "家族"
-    AdapterResolution.PROTOCOL_CONFIRMED -> "协议确认"
+private fun AdapterSnapshot.localizedDisplayName(): UiText = when (id) {
+    "edifier-evo-pro" -> uiText(R.string.model_edifier_evo)
+    "honor-x5spro" -> uiText(R.string.model_honor_x5s_pro)
+    else -> UiText.Dynamic(displayName)
 }
 
-private fun SystemProfileState.displayName(): String = when (this) {
-    SystemProfileState.DISCONNECTED -> "未连接"
-    SystemProfileState.CONNECTED -> "已连接"
+private fun AdapterResolution.displayName(): UiText = uiText(
+    when (this) {
+        AdapterResolution.STANDARD -> R.string.value_resolution_standard
+        AdapterResolution.EXACT_MATCH -> R.string.value_resolution_exact
+        AdapterResolution.FAMILY_MATCH -> R.string.value_resolution_family
+        AdapterResolution.PROTOCOL_CONFIRMED -> R.string.value_resolution_protocol
+    },
+)
+
+private fun SystemProfileState.displayName(): UiText = uiText(
+    if (this == SystemProfileState.CONNECTED) R.string.value_connected
+    else R.string.value_not_connected,
+)
+
+private fun PrivateTransportState.displayName(): UiText = uiText(
+    when (this) {
+        PrivateTransportState.NOT_REQUIRED -> R.string.value_not_required
+        PrivateTransportState.IDLE -> R.string.value_idle
+        PrivateTransportState.CONNECTING -> R.string.value_connecting
+        PrivateTransportState.CONNECTED -> R.string.value_connected
+        PrivateTransportState.RECOVERING -> R.string.value_recovering
+        PrivateTransportState.DORMANT -> R.string.value_dormant
+    },
+)
+
+private fun ProtocolHandshakeState.displayName(): UiText = uiText(
+    when (this) {
+        ProtocolHandshakeState.NOT_REQUIRED -> R.string.value_not_required
+        ProtocolHandshakeState.PENDING -> R.string.value_pending
+        ProtocolHandshakeState.CONFIRMED -> R.string.value_confirmed
+        ProtocolHandshakeState.REJECTED -> R.string.value_rejected
+    },
+)
+
+private fun BatteryReading.displayValue(): UiText = UiText.Dynamic(
+    percent?.let { value -> if (charging) "$value%+" else "$value%" } ?: "—",
+)
+
+private fun NoiseMode?.displayName(): UiText = when (this) {
+    NoiseMode.ANC -> uiText(R.string.value_anc)
+    NoiseMode.OFF -> uiText(R.string.value_off)
+    NoiseMode.TRANSPARENCY -> uiText(R.string.value_transparency)
+    NoiseMode.WIND -> uiText(R.string.value_wind)
+    null -> UiText.Dynamic("—")
 }
 
-private fun PrivateTransportState.displayName(): String = when (this) {
-    PrivateTransportState.NOT_REQUIRED -> "无需"
-    PrivateTransportState.IDLE -> "待连接"
-    PrivateTransportState.CONNECTING -> "连接中"
-    PrivateTransportState.CONNECTED -> "已连接"
-    PrivateTransportState.RECOVERING -> "恢复中"
-    PrivateTransportState.DORMANT -> "已休眠"
+private fun HeadsetFormFactor.displayName(): UiText = when (this) {
+    HeadsetFormFactor.TWS -> UiText.Dynamic("TWS")
+    HeadsetFormFactor.HEADPHONES -> uiText(R.string.value_headphones)
 }
 
-private fun ProtocolHandshakeState.displayName(): String = when (this) {
-    ProtocolHandshakeState.NOT_REQUIRED -> "无需"
-    ProtocolHandshakeState.PENDING -> "确认中"
-    ProtocolHandshakeState.CONFIRMED -> "已确认"
-    ProtocolHandshakeState.REJECTED -> "已拒绝"
-}
+private fun BatterySource.displayName(): UiText = uiText(
+    when (this) {
+        BatterySource.NONE -> R.string.value_battery_unavailable
+        BatterySource.SYSTEM_AGGREGATE -> R.string.value_battery_android
+        BatterySource.PRIVATE_PROTOCOL -> R.string.value_battery_private
+    },
+)
 
-private fun BatteryReading.displayValue(): String =
-    percent?.let { value -> if (charging) "$value%+" else "$value%" } ?: "—"
-
-private fun NoiseMode?.displayName(): String = when (this) {
-    NoiseMode.ANC -> "降噪"
-    NoiseMode.OFF -> "关闭"
-    NoiseMode.TRANSPARENCY -> "通透"
-    NoiseMode.WIND -> "抗风噪"
-    null -> "—"
-}
-
-private fun HeadsetFormFactor.displayName(): String = when (this) {
-    HeadsetFormFactor.TWS -> "TWS"
-    HeadsetFormFactor.HEADPHONES -> "头戴"
-}
-
-private fun BatterySource.displayName(): String = when (this) {
-    BatterySource.NONE -> "不提供"
-    BatterySource.SYSTEM_AGGREGATE -> "Android 整机"
-    BatterySource.PRIVATE_PROTOCOL -> "私有协议"
-}
+private val TransportKind.displayName: String
+    get() = when (this) {
+        TransportKind.RFCOMM -> "RFCOMM"
+        TransportKind.GATT -> "GATT"
+        TransportKind.L2CAP -> "L2CAP"
+    }

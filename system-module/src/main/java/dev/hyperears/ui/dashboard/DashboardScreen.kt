@@ -33,6 +33,10 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import dev.hyperears.R
+import dev.hyperears.ui.resolve
 import dev.hyperears.ui.components.HyperEarsPage
 import java.text.DateFormat
 import java.util.Date
@@ -43,7 +47,7 @@ fun DashboardScreen(
     uiState: DashboardUiState,
     onRefresh: () -> Unit,
 ) {
-    HyperEarsPage(title = "HyperEars") { pagePadding, scrollBehavior ->
+    HyperEarsPage(title = stringResource(R.string.app_name)) { pagePadding, scrollBehavior ->
         val listState = rememberLazyListState()
         LazyColumn(
             state = listState,
@@ -64,7 +68,7 @@ fun DashboardScreen(
             }
             item(key = "session-header") {
                 SectionHeader(
-                    title = "设备会话",
+                    title = stringResource(R.string.dashboard_device_sessions),
                     count = uiState.sessions.size,
                 )
             }
@@ -99,29 +103,36 @@ private fun RuntimeCard(
         Column(modifier = Modifier.padding(20.dp)) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "运行状态",
+                    text = stringResource(R.string.dashboard_runtime_status),
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
-                TextButton(onClick = onRefresh) { Text("同步") }
+                TextButton(onClick = onRefresh) { Text(stringResource(R.string.action_sync)) }
             }
             RuntimeProcessRow(
-                label = "蓝牙进程 Hook",
+                label = stringResource(R.string.dashboard_bluetooth_hook),
                 status = if (uiState.runtimeResponsive) {
-                    "已响应 · ${uiState.lastUpdatedAtMillis?.let(::formatTime) ?: "—"}"
+                    stringResource(
+                        R.string.dashboard_responded_at,
+                        uiState.lastUpdatedAtMillis?.let(::formatTime) ?: "—",
+                    )
                 } else {
-                    "未响应"
+                    stringResource(R.string.dashboard_not_responding)
                 },
                 online = uiState.runtimeResponsive,
             )
             Spacer(Modifier.height(12.dp))
             RuntimeProcessRow(
-                label = "MiLink 进程 Hook",
+                label = stringResource(R.string.dashboard_milink_hook),
                 status = if (uiState.miLinkProcesses.isEmpty()) {
-                    "未响应"
+                    stringResource(R.string.dashboard_not_responding)
                 } else {
-                    "${uiState.miLinkProcesses.size} 个进程响应"
+                    pluralStringResource(
+                        R.plurals.dashboard_processes_responding,
+                        uiState.miLinkProcesses.size,
+                        uiState.miLinkProcesses.size,
+                    )
                 },
                 online = uiState.miLinkProcesses.isNotEmpty(),
             )
@@ -129,10 +140,26 @@ private fun RuntimeCard(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(Modifier.height(16.dp))
             Row(modifier = Modifier.fillMaxWidth()) {
-                SummaryMetric("状态接收", uiState.miLinkObservedCount, Modifier.weight(1f))
-                SummaryMetric("身份查询", uiState.identityQueriedCount, Modifier.weight(1f))
-                SummaryMetric("能力查询", uiState.capabilitiesQueriedCount, Modifier.weight(1f))
-                SummaryMetric("活动会话", uiState.sessions.size, Modifier.weight(1f))
+                SummaryMetric(
+                    stringResource(R.string.dashboard_state_received),
+                    uiState.miLinkObservedCount,
+                    Modifier.weight(1f),
+                )
+                SummaryMetric(
+                    stringResource(R.string.dashboard_identity_queries),
+                    uiState.identityQueriedCount,
+                    Modifier.weight(1f),
+                )
+                SummaryMetric(
+                    stringResource(R.string.dashboard_capability_queries),
+                    uiState.capabilitiesQueriedCount,
+                    Modifier.weight(1f),
+                )
+                SummaryMetric(
+                    stringResource(R.string.dashboard_active_sessions),
+                    uiState.sessions.size,
+                    Modifier.weight(1f),
+                )
             }
         }
     }
@@ -232,12 +259,12 @@ private fun EmptySessionsCard() {
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Text(
-                text = "暂无活动设备会话",
+                text = stringResource(R.string.dashboard_no_sessions),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                text = "受支持耳机连接后显示",
+                text = stringResource(R.string.dashboard_no_sessions_detail),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -268,28 +295,34 @@ private fun DeviceSessionCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = session.deviceName,
+                        text = session.deviceName.resolve(),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = "Adapter  ${session.adapterName}",
+                        text = stringResource(
+                            R.string.dashboard_adapter,
+                            session.adapterName.resolve(),
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = "ID  ${session.adapterId}",
+                        text = stringResource(R.string.dashboard_adapter_id, session.adapterId),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = "蓝牙  ${session.address}",
+                        text = stringResource(
+                            R.string.dashboard_bluetooth_address,
+                            session.address,
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -302,14 +335,14 @@ private fun DeviceSessionCard(
             AdapterFacts(session)
 
             Text(
-                text = "会话状态",
+                text = stringResource(R.string.dashboard_session_status),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             SessionStatusList(session.headsetLifecycle)
 
             Text(
-                text = "MiLink 处理",
+                text = stringResource(R.string.dashboard_milink_processing),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -326,7 +359,7 @@ private fun DeviceSessionCard(
 private fun AdapterFacts(session: DeviceSessionUiModel) {
     if (!session.adapterResolved) {
         Text(
-            text = session.adapterSummary,
+            text = session.adapterSummary.resolve(),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.error,
         )
@@ -334,12 +367,15 @@ private fun AdapterFacts(session: DeviceSessionUiModel) {
     }
     Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
         Text(
-            text = session.adapterSummary,
+            text = session.adapterSummary.resolve(),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
-            text = "控制  ${session.controlSummary}",
+            text = stringResource(
+                R.string.dashboard_control,
+                session.controlSummary.resolve(),
+            ),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -370,7 +406,11 @@ private fun MetricStrip(metrics: List<DeviceMetric>) {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         metrics.forEach { metric ->
-            CompactMetric(metric.label, metric.value, Modifier.weight(1f))
+            CompactMetric(
+                metric.label.resolve(),
+                metric.value.resolve(),
+                Modifier.weight(1f),
+            )
         }
     }
 }
@@ -392,13 +432,13 @@ private fun SessionStatusRow(
     ) {
         StatusDot(color)
         Text(
-            text = stage.label,
+            text = stage.label.resolve(),
             modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
-            text = stage.value,
+            text = stage.value.resolve(),
             style = MaterialTheme.typography.bodyMedium,
             color = color,
             fontWeight = FontWeight.Medium,
@@ -436,13 +476,13 @@ private fun LifecycleStrip(stages: List<DeviceLifecycleStage>) {
                 ) {
                     StatusDot(color)
                     Text(
-                        text = stage.label,
+                        text = stage.label.resolve(),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                     )
                     Text(
-                        text = stage.value,
+                        text = stage.value.resolve(),
                         style = MaterialTheme.typography.labelMedium,
                         color = color,
                         fontWeight = if (stage.complete || stage.active) {
@@ -508,7 +548,7 @@ private fun PhasePill(phase: DevicePhase) {
         contentColor = color,
     ) {
         Text(
-            text = phase.label,
+            text = stringResource(phase.labelRes),
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.SemiBold,

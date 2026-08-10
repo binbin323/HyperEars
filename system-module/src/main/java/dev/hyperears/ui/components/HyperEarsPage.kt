@@ -14,6 +14,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import dev.hyperears.R
 
 /**
  * Owns one page's app bar and scroll state.
@@ -44,7 +46,9 @@ fun HyperEarsPage(
                         IconButton(onClick = navigateBack) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "返回",
+                                contentDescription = stringResource(
+                                    R.string.content_description_back,
+                                ),
                             )
                         }
                     }

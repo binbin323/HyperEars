@@ -1,7 +1,237 @@
 <resources>
-    <string name="app_name">HyperEars</string>
+    <string name="app_name" translatable="false">HyperEars</string>
     <string name="xposed_description">Third-party headset integration for Xiaomi HyperOS and MiLink.</string>
-    <string-array name="xposed_scope">
+
+    <string name="nav_dashboard">Home</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_about">About</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_execute">Run</string>
+    <string name="action_executing">Running</string>
+    <string name="action_export">Export</string>
+    <string name="action_sync">Sync</string>
+    <string name="content_description_back">Back</string>
+    <string name="content_description_expand">Expand</string>
+    <string name="content_description_collapse">Collapse</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_headset_model">Headset model</string>
+    <string name="settings_headset_model_auto">Automatic detection</string>
+    <string name="settings_headset_model_auto_detail">Match using the Bluetooth name and device information</string>
+    <string name="settings_pause_module">Pause module</string>
+    <string name="settings_pause_module_detail">Disable third-party headset integration.</string>
+    <string name="settings_open_vendor_settings">Open vendor settings</string>
+    <string name="settings_open_vendor_settings_detail">The corresponding vendor app must be enabled in the module scope.</string>
+    <string name="settings_runtime_yield">Yield at runtime</string>
+    <string name="settings_runtime_yield_detail">Release the headset private control channel while the vendor app is running. Its scope must be enabled.</string>
+    <string name="settings_debug">Debug</string>
+    <string name="settings_debug_detail">Adapters, detailed logging, and log export.</string>
+    <string name="settings_root_required">Root access required</string>
+    <string name="settings_root_checking">Checking Root access</string>
+    <string name="settings_debug_export_root_required">Root access is required to export LSPosed logs</string>
+    <string name="settings_adapters">Adapters</string>
+    <string name="settings_adapters_detail">Manage specific models and family fallbacks by brand.</string>
+    <string name="settings_detailed_logging">Detailed logging</string>
+    <string name="settings_detailed_logging_detail">Record module lifecycle, protocol, and yielding states. LSPosed must allow detailed logs and output them to the daemon.</string>
+    <string name="settings_export_logs">Export logs</string>
+    <string name="settings_export_logs_detail">Export LSPosed module logs and app operation logs.</string>
+    <string name="adapter_section_models">Specific models</string>
+    <string name="adapter_section_family">Family fallback</string>
+    <string name="adapter_section_standard">Standard fallback</string>
+    <plurals name="adapter_enabled_count">
+        <item quantity="one">%1$d / %2$d enabled</item>
+        <item quantity="other">%1$d / %2$d enabled</item>
+    </plurals>
+
+    <string name="root_restart_milink">Restart MiLink</string>
+    <string name="root_restart_milink_detail">Stop MiLink. The system will start it when the connected-device center is opened again.</string>
+    <string name="root_restart_bluetooth">Restart Bluetooth</string>
+    <string name="root_restart_bluetooth_detail">Restart Bluetooth. Connected devices will disconnect temporarily.</string>
+    <string name="root_stop_vendor_apps">Stop vendor apps</string>
+    <string name="root_stop_vendor_apps_detail">Stop supported vendor apps and restore HyperEars control.</string>
+
+    <string name="toast_logs_exported">Logs exported</string>
+    <string name="toast_log_export_failed">Log export failed</string>
+
+    <string name="dashboard_device_sessions">Device sessions</string>
+    <string name="dashboard_runtime_status">Runtime status</string>
+    <string name="dashboard_bluetooth_hook">Bluetooth process hook</string>
+    <string name="dashboard_milink_hook">MiLink process hook</string>
+    <string name="dashboard_responded_at">Responded · %1$s</string>
+    <string name="dashboard_not_responding">Not responding</string>
+    <plurals name="dashboard_processes_responding">
+        <item quantity="one">%1$d process responding</item>
+        <item quantity="other">%1$d processes responding</item>
+    </plurals>
+    <string name="dashboard_state_received">State received</string>
+    <string name="dashboard_identity_queries">Identity queries</string>
+    <string name="dashboard_capability_queries">Capability queries</string>
+    <string name="dashboard_active_sessions">Active sessions</string>
+    <string name="dashboard_no_sessions">No active device sessions</string>
+    <string name="dashboard_no_sessions_detail">Supported headsets appear here after connecting</string>
+    <string name="dashboard_adapter">Adapter  %1$s</string>
+    <string name="dashboard_adapter_id">ID  %1$s</string>
+    <string name="dashboard_bluetooth_address">Bluetooth  %1$s</string>
+    <string name="dashboard_session_status">Session status</string>
+    <string name="dashboard_milink_processing">MiLink processing</string>
+    <string name="dashboard_control">Control  %1$s</string>
+    <string name="dashboard_unnamed_headset">Unnamed headset</string>
+    <string name="dashboard_unresolved">Unresolved</string>
+    <string name="dashboard_no_adapter_snapshot">No Adapter snapshot has been established</string>
+    <string name="dashboard_capabilities_unknown">Capabilities unknown</string>
+
+    <string name="phase_system_disconnected">System audio disconnected</string>
+    <string name="phase_external_control_app">Vendor control app running</string>
+    <string name="phase_transport_connecting">Private transport connecting</string>
+    <string name="phase_transport_recovering">Private transport recovering</string>
+    <string name="phase_transport_dormant">Private transport dormant</string>
+    <string name="phase_protocol_confirming">Confirming protocol</string>
+    <string name="phase_protocol_rejected">Protocol confirmation failed</string>
+    <string name="phase_waiting_for_milink">Waiting for MiLink</string>
+    <string name="phase_state_accepted">State accepted by MiLink</string>
+    <string name="phase_identity_queried">Identity queried by MiLink</string>
+    <string name="phase_capabilities_queried">Capabilities queried by MiLink</string>
+
+    <string name="stage_state_received">State</string>
+    <string name="stage_identity_query">Identity</string>
+    <string name="stage_card_capabilities">Capabilities</string>
+    <string name="stage_state_notification">Notification</string>
+    <string name="stage_received">Received</string>
+    <string name="stage_called">Called</string>
+    <string name="stage_triggered">Triggered</string>
+    <string name="stage_not_observed">Not observed</string>
+    <string name="stage_system_connection">System connection</string>
+    <string name="stage_control">Control</string>
+    <string name="stage_private_channel">Private channel</string>
+    <string name="stage_protocol">Protocol</string>
+
+    <string name="metric_device">Device</string>
+    <string name="metric_left_earbud">Left</string>
+    <string name="metric_right_earbud">Right</string>
+    <string name="metric_charging_case">Case</string>
+    <string name="metric_mode">Mode</string>
+    <string name="value_not_supported">Not supported</string>
+    <string name="value_none">None</string>
+    <string name="value_not_declared">Not declared</string>
+    <string name="value_not_connected">Disconnected</string>
+    <string name="value_connected">Connected</string>
+    <string name="value_not_required">Not required</string>
+    <string name="value_idle">Idle</string>
+    <string name="value_connecting">Connecting</string>
+    <string name="value_recovering">Recovering</string>
+    <string name="value_dormant">Dormant</string>
+    <string name="value_pending">Pending</string>
+    <string name="value_confirmed">Confirmed</string>
+    <string name="value_rejected">Rejected</string>
+    <string name="value_anc">Noise cancellation</string>
+    <string name="value_off">Off</string>
+    <string name="value_transparency">Transparency</string>
+    <string name="value_wind">Wind noise reduction</string>
+    <string name="value_headphones">Headphones</string>
+    <string name="value_battery_unavailable">Unavailable</string>
+    <string name="value_battery_android">Android device</string>
+    <string name="value_battery_private">Private protocol</string>
+    <string name="value_resolution_standard">Standard</string>
+    <string name="value_resolution_exact">Exact</string>
+    <string name="value_resolution_family">Family</string>
+    <string name="value_resolution_protocol">Protocol confirmed</string>
+    <string name="adapter_summary">Match  %1$s  ·  Form  %2$s  ·  Battery  %3$s  ·  Transport  %4$s</string>
+    <string name="control_audio_handoff_only">MiLink handoff and system volume; no private modes</string>
+
+    <string name="about_title">About</string>
+    <string name="about_version">%1$s (%2$d) · GPL-3.0-only</string>
+    <string name="about_summary">Adds HyperOS and MiLink system integration for third-party Bluetooth headsets.</string>
+    <string name="about_support_introduction">All entries support device handoff and system volume. Battery and noise controls are listed below; private capabilities are enabled after protocol confirmation.</string>
+    <string name="about_copyright">© 2026 HyperEars contributors\nProduct names and trademarks belong to their respective owners.</string>
+    <string name="about_support_detail">Battery: %1$s · Noise: %2$s</string>
+    <string name="evidence_verified">Device verified</string>
+    <string name="evidence_public_implementation">Public implementation</string>
+    <string name="evidence_reference_protocol">Reference protocol</string>
+    <string name="evidence_family_probe">Family probe</string>
+    <string name="evidence_standard_fallback">Standard adapter</string>
+    <string name="battery_component">Component levels</string>
+    <string name="battery_left_right">Left/right levels</string>
+    <string name="battery_device">Device level</string>
+    <string name="battery_aggregate">Aggregate level</string>
+    <string name="battery_device_or_component">Device or component</string>
+    <string name="battery_device_or_aggregate">Device or aggregate</string>
+    <string name="battery_system">System level</string>
+    <string name="noise_anc_off_transparency">Noise cancellation / Off / Transparency</string>
+    <string name="noise_anc_off_transparency_wind">Noise cancellation / Off / Transparency / Wind noise reduction</string>
+    <string name="noise_anc_transparency_wind">Noise cancellation / Transparency / Wind noise reduction</string>
+    <string name="noise_anc_off_wind">Noise cancellation / Off / Wind noise reduction</string>
+    <string name="noise_anc_transparency">Noise cancellation / Transparency</string>
+    <string name="noise_anc_off_transparency_wind_by_model">Noise cancellation / Off / Transparency / Wind noise reduction (model dependent)</string>
+    <string name="noise_off_transparency">Off / Transparency</string>
+    <string name="noise_none">None</string>
+
+    <string name="project_source_code">Source code</string>
+    <string name="project_branch_source_code">Fork source code</string>
+    <string name="project_upstream_address" translatable="false">github.com/silverpoetry/HyperEars</string>
+    <string name="project_fork_address" translatable="false">github.com/binbin323/HyperEars</string>
+    <string name="project_compatibility">Compatibility documentation</string>
+    <string name="project_compatibility_detail">Model, identification, protocol, and capability matrix</string>
+    <string name="project_feedback">Issue tracker</string>
+    <string name="project_feedback_detail">Report compatibility issues or suggest features</string>
+    <string name="project_license">Open-source license</string>
+    <string name="project_license_detail" translatable="false">GNU GPL-3.0-only</string>
+    <string name="project_third_party">Third-party notices</string>
+    <string name="project_third_party_detail">Protocol sources and third-party licenses</string>
+    <string name="project_privacy">Privacy notice</string>
+    <string name="project_privacy_detail">Local data handling and permission boundaries</string>
+
+    <string name="brand_vivo">vivo / iQOO</string>
+    <string name="brand_oppo">OPPO Enco</string>
+    <string name="brand_starring">StarRing / LATTE EARS</string>
+    <string name="brand_bose">Bose</string>
+    <string name="brand_edifier">Edifier</string>
+    <string name="brand_roseselsa">ROSESELSA</string>
+    <string name="brand_nicehck">NiceHCK / YuanDao</string>
+    <string name="brand_moondrop">MOONDROP</string>
+    <string name="brand_honor">HONOR</string>
+    <string name="brand_qcy">QCY</string>
+    <string name="brand_sony">Sony</string>
+    <string name="brand_generic">Generic Bluetooth headsets</string>
+
+    <string name="model_vivo_air3_pro" translatable="false">vivo TWS Air3 Pro</string>
+    <string name="model_vivo_3e" translatable="false">vivo TWS 3e</string>
+    <string name="model_vivo_other">Other vivo / iQOO TWS</string>
+    <string name="model_oppo_air2_pro" translatable="false">Enco Air2 Pro</string>
+    <string name="model_oppo_free_x3_air5" translatable="false">Enco Free4 / X3 / Air5</string>
+    <string name="model_oppo_other">Other OPPO / Enco headsets</string>
+    <string name="model_starring_ultra" translatable="false">StarRing Ultra</string>
+    <string name="model_starring_other">Other StarRing / LATTE EARS headsets</string>
+    <string name="model_bose_qc" translatable="false">QuietComfort Headphones</string>
+    <string name="model_bose_qc35" translatable="false">QuietComfort 35 / 35 II</string>
+    <string name="model_bose_700" translatable="false">Noise Cancelling Headphones 700</string>
+    <string name="model_bose_qc45_earbuds" translatable="false">QuietComfort 45 / QuietComfort Earbuds</string>
+    <string name="model_bose_earbuds_ultra">QuietComfort Earbuds II / Ultra series</string>
+    <string name="model_bose_other">Other Bose BMAP headsets</string>
+    <string name="model_edifier_w860" translatable="false">W860NB PRO</string>
+    <string name="model_edifier_evo">HECATE Evo Pro</string>
+    <string name="model_edifier_w_series">W820 / W830 / W860 series</string>
+    <string name="model_edifier_other">Other Edifier headsets</string>
+    <string name="model_rose_i5" translatable="false">EARFREE i5</string>
+    <string name="model_rose_furina" translatable="false">Furina Endless Solo of Solitude</string>
+    <string name="model_rose_budsfeel" translatable="false">ROSE BudsFeel MK2</string>
+    <string name="model_rose_product_line">EARFREE / EARFEEL / BudsFeel product line</string>
+    <string name="model_rose_other">Other ROSESELSA / ROSE headsets</string>
+    <string name="model_nicehck_orig" translatable="false">NiceHCK YuanDao OriG in</string>
+    <string name="model_nicehck_other">Other NiceHCK / YuanDao headsets</string>
+    <string name="model_moondrop_robin">Robin</string>
+    <string name="model_moondrop_other">Other MOONDROP headsets</string>
+    <string name="model_honor_x5s_pro">HONOR Choice Earbuds X5s Pro</string>
+    <string name="model_qcy_c50s" translatable="false">Crossky C50S / QYCC50S</string>
+    <string name="model_qcy_other">Other headsets matching QCY / Crossky naming rules</string>
+    <string name="model_sony_legacy_anc" translatable="false">WH-1000XM2 / XM3 / XM4, WF-1000XM3 / XM4, WI-SP600N</string>
+    <string name="model_sony_current_anc" translatable="false">WH-1000XM5 / XM6, CH720N, ULT WEAR, WF-1000XM5, SP800N, C700N / C710N, LinkBuds S</string>
+    <string name="model_sony_wfc510" translatable="false">WF-C510</string>
+    <string name="model_sony_standard_models" translatable="false">WF-C500 / LinkBuds / WI-C100</string>
+    <string name="model_sony_other_anc">Other Sony noise-cancelling models</string>
+    <string name="model_sony_other_standard">Other standard Sony headsets</string>
+    <string name="model_generic">Standard A2DP / HFP headsets</string>
+
+    <string-array name="xposed_scope" translatable="false">
         <item>com.android.bluetooth</item>
         <item>com.milink.service</item>
         <item>com.vivo.vivotws</item>

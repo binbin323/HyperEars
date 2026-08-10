@@ -27,327 +27,329 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.hyperears.BuildConfig
+import dev.hyperears.R
 import dev.hyperears.ui.components.HyperEarsPage
 
 private data class SupportEntry(
-    val name: String,
+    val nameRes: Int,
     val evidence: EvidenceLevel,
     val battery: BatteryCapability,
-    val noiseControl: String,
+    val noiseControlRes: Int,
 )
 
 private data class SupportBrand(
-    val name: String,
+    val nameRes: Int,
     val entries: List<SupportEntry>,
 )
 
-private enum class EvidenceLevel(val label: String) {
-    VERIFIED("实机验证"),
-    PUBLIC_IMPLEMENTATION("公开实现"),
-    REFERENCE_PROTOCOL("参考协议"),
-    FAMILY_PROBE("家族探测"),
-    STANDARD_FALLBACK("标准适配"),
+private enum class EvidenceLevel(val labelRes: Int) {
+    VERIFIED(R.string.evidence_verified),
+    PUBLIC_IMPLEMENTATION(R.string.evidence_public_implementation),
+    REFERENCE_PROTOCOL(R.string.evidence_reference_protocol),
+    FAMILY_PROBE(R.string.evidence_family_probe),
+    STANDARD_FALLBACK(R.string.evidence_standard_fallback),
 }
 
-private enum class BatteryCapability(val label: String) {
-    COMPONENT("组件电量"),
-    LEFT_RIGHT("左右耳电量"),
-    DEVICE("整机电量"),
-    AGGREGATE("聚合电量"),
-    DEVICE_OR_COMPONENT("整机或组件"),
-    DEVICE_OR_AGGREGATE("整机或聚合"),
-    SYSTEM("系统电量"),
+private enum class BatteryCapability(val labelRes: Int) {
+    COMPONENT(R.string.battery_component),
+    LEFT_RIGHT(R.string.battery_left_right),
+    DEVICE(R.string.battery_device),
+    AGGREGATE(R.string.battery_aggregate),
+    DEVICE_OR_COMPONENT(R.string.battery_device_or_component),
+    DEVICE_OR_AGGREGATE(R.string.battery_device_or_aggregate),
+    SYSTEM(R.string.battery_system),
 }
 
 private data class ProjectLink(
-    val title: String,
-    val detail: String,
+    val titleRes: Int,
+    val detailRes: Int,
     val url: String,
 )
 
 private val supportBrands = listOf(
     SupportBrand(
-        name = "vivo / iQOO",
+        nameRes = R.string.brand_vivo,
         entries = listOf(
             SupportEntry(
-                name = "vivo TWS Air3 Pro",
+                nameRes = R.string.model_vivo_air3_pro,
                 evidence = EvidenceLevel.VERIFIED,
                 battery = BatteryCapability.COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透",
+                noiseControlRes = R.string.noise_anc_off_transparency,
             ),
             SupportEntry(
-                name = "vivo TWS 3e",
+                nameRes = R.string.model_vivo_3e,
                 evidence = EvidenceLevel.PUBLIC_IMPLEMENTATION,
                 battery = BatteryCapability.COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透",
+                noiseControlRes = R.string.noise_anc_off_transparency,
             ),
             SupportEntry(
-                name = "其他 vivo / iQOO TWS",
+                nameRes = R.string.model_vivo_other,
                 evidence = EvidenceLevel.FAMILY_PROBE,
                 battery = BatteryCapability.COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透",
+                noiseControlRes = R.string.noise_anc_off_transparency,
             ),
         ),
     ),
     SupportBrand(
-        name = "OPPO Enco",
+        nameRes = R.string.brand_oppo,
         entries = listOf(
             SupportEntry(
-                name = "Enco Air2 Pro",
+                nameRes = R.string.model_oppo_air2_pro,
                 evidence = EvidenceLevel.REFERENCE_PROTOCOL,
                 battery = BatteryCapability.COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透",
+                noiseControlRes = R.string.noise_anc_off_transparency,
             ),
             SupportEntry(
-                name = "Enco Free4 / X3 / Air5",
+                nameRes = R.string.model_oppo_free_x3_air5,
                 evidence = EvidenceLevel.REFERENCE_PROTOCOL,
                 battery = BatteryCapability.COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透",
+                noiseControlRes = R.string.noise_anc_off_transparency,
             ),
             SupportEntry(
-                name = "其他 OPPO / Enco 耳机",
+                nameRes = R.string.model_oppo_other,
                 evidence = EvidenceLevel.FAMILY_PROBE,
                 battery = BatteryCapability.COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透",
+                noiseControlRes = R.string.noise_anc_off_transparency,
             ),
         ),
     ),
     SupportBrand(
-        name = "StarRing / 籁特易耳",
+        nameRes = R.string.brand_starring,
         entries = listOf(
             SupportEntry(
-                name = "StarRing Ultra",
+                nameRes = R.string.model_starring_ultra,
                 evidence = EvidenceLevel.VERIFIED,
                 battery = BatteryCapability.COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透 / 抗风噪",
+                noiseControlRes = R.string.noise_anc_off_transparency_wind,
             ),
             SupportEntry(
-                name = "其他 StarRing / 籁特易耳耳机",
+                nameRes = R.string.model_starring_other,
                 evidence = EvidenceLevel.STANDARD_FALLBACK,
                 battery = BatteryCapability.SYSTEM,
-                noiseControl = "无",
+                noiseControlRes = R.string.noise_none,
             ),
         ),
     ),
     SupportBrand(
-        name = "Bose",
+        nameRes = R.string.brand_bose,
         entries = listOf(
             SupportEntry(
-                name = "QuietComfort Headphones",
+                nameRes = R.string.model_bose_qc,
                 evidence = EvidenceLevel.VERIFIED,
                 battery = BatteryCapability.DEVICE,
-                noiseControl = "降噪 / 通透 / 抗风噪",
+                noiseControlRes = R.string.noise_anc_transparency_wind,
             ),
             SupportEntry(
-                name = "QuietComfort 35 / 35 II",
+                nameRes = R.string.model_bose_qc35,
                 evidence = EvidenceLevel.PUBLIC_IMPLEMENTATION,
                 battery = BatteryCapability.DEVICE,
-                noiseControl = "降噪 / 关闭 / 抗风噪",
+                noiseControlRes = R.string.noise_anc_off_wind,
             ),
             SupportEntry(
-                name = "Noise Cancelling Headphones 700",
+                nameRes = R.string.model_bose_700,
                 evidence = EvidenceLevel.PUBLIC_IMPLEMENTATION,
                 battery = BatteryCapability.DEVICE,
-                noiseControl = "降噪 / 关闭 / 通透",
+                noiseControlRes = R.string.noise_anc_off_transparency,
             ),
             SupportEntry(
-                name = "QuietComfort 45 / QuietComfort Earbuds",
+                nameRes = R.string.model_bose_qc45_earbuds,
                 evidence = EvidenceLevel.PUBLIC_IMPLEMENTATION,
                 battery = BatteryCapability.DEVICE_OR_COMPONENT,
-                noiseControl = "降噪 / 通透",
+                noiseControlRes = R.string.noise_anc_transparency,
             ),
             SupportEntry(
-                name = "QuietComfort Earbuds II / Ultra 系列",
+                nameRes = R.string.model_bose_earbuds_ultra,
                 evidence = EvidenceLevel.REFERENCE_PROTOCOL,
                 battery = BatteryCapability.DEVICE_OR_COMPONENT,
-                noiseControl = "降噪 / 通透",
+                noiseControlRes = R.string.noise_anc_transparency,
             ),
             SupportEntry(
-                name = "其他 Bose BMAP 耳机",
+                nameRes = R.string.model_bose_other,
                 evidence = EvidenceLevel.FAMILY_PROBE,
                 battery = BatteryCapability.DEVICE_OR_COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透 / 抗风噪（按型号）",
+                noiseControlRes = R.string.noise_anc_off_transparency_wind_by_model,
             ),
         ),
     ),
     SupportBrand(
-        name = "Edifier / 漫步者",
+        nameRes = R.string.brand_edifier,
         entries = listOf(
             SupportEntry(
-                name = "W860NB PRO",
+                nameRes = R.string.model_edifier_w860,
                 evidence = EvidenceLevel.VERIFIED,
                 battery = BatteryCapability.DEVICE,
-                noiseControl = "降噪 / 关闭 / 通透 / 抗风噪",
+                noiseControlRes = R.string.noise_anc_off_transparency_wind,
             ),
             SupportEntry(
-                name = "花再 Evo Pro",
+                nameRes = R.string.model_edifier_evo,
                 evidence = EvidenceLevel.VERIFIED,
                 battery = BatteryCapability.AGGREGATE,
-                noiseControl = "降噪 / 关闭 / 通透 / 抗风噪",
+                noiseControlRes = R.string.noise_anc_off_transparency_wind,
             ),
             SupportEntry(
-                name = "W820 / W830 / W860 系列",
+                nameRes = R.string.model_edifier_w_series,
                 evidence = EvidenceLevel.FAMILY_PROBE,
                 battery = BatteryCapability.DEVICE,
-                noiseControl = "降噪 / 关闭 / 通透 / 抗风噪",
+                noiseControlRes = R.string.noise_anc_off_transparency_wind,
             ),
             SupportEntry(
-                name = "其他 Edifier 耳机",
+                nameRes = R.string.model_edifier_other,
                 evidence = EvidenceLevel.FAMILY_PROBE,
                 battery = BatteryCapability.DEVICE_OR_AGGREGATE,
-                noiseControl = "降噪 / 关闭 / 通透 / 抗风噪",
+                noiseControlRes = R.string.noise_anc_off_transparency_wind,
             ),
         ),
     ),
     SupportBrand(
-        name = "ROSESELSA / 弱水时砂",
+        nameRes = R.string.brand_roseselsa,
         entries = listOf(
             SupportEntry(
-                name = "EARFREE i5",
+                nameRes = R.string.model_rose_i5,
                 evidence = EvidenceLevel.PUBLIC_IMPLEMENTATION,
                 battery = BatteryCapability.COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透 / 抗风噪",
+                noiseControlRes = R.string.noise_anc_off_transparency_wind,
             ),
             SupportEntry(
-                name = "Furina Endless Solo of Solitude",
+                nameRes = R.string.model_rose_furina,
                 evidence = EvidenceLevel.VERIFIED,
                 battery = BatteryCapability.COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透 / 抗风噪",
+                noiseControlRes = R.string.noise_anc_off_transparency_wind,
             ),
             SupportEntry(
-                name = "ROSE BudsFeel MK2",
+                nameRes = R.string.model_rose_budsfeel,
                 evidence = EvidenceLevel.PUBLIC_IMPLEMENTATION,
                 battery = BatteryCapability.COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透 / 抗风噪",
+                noiseControlRes = R.string.noise_anc_off_transparency_wind,
             ),
             SupportEntry(
-                name = "EARFREE / EARFEEL / BudsFeel 产品线",
+                nameRes = R.string.model_rose_product_line,
                 evidence = EvidenceLevel.FAMILY_PROBE,
                 battery = BatteryCapability.COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透 / 抗风噪",
+                noiseControlRes = R.string.noise_anc_off_transparency_wind,
             ),
             SupportEntry(
-                name = "其他 ROSESELSA / ROSE 耳机",
+                nameRes = R.string.model_rose_other,
                 evidence = EvidenceLevel.STANDARD_FALLBACK,
                 battery = BatteryCapability.SYSTEM,
-                noiseControl = "无",
+                noiseControlRes = R.string.noise_none,
             ),
         ),
     ),
     SupportBrand(
-        name = "NiceHCK / YuanDao",
+        nameRes = R.string.brand_nicehck,
         entries = listOf(
             SupportEntry(
-                name = "NiceHCK YuanDao OriG in",
+                nameRes = R.string.model_nicehck_orig,
                 evidence = EvidenceLevel.PUBLIC_IMPLEMENTATION,
                 battery = BatteryCapability.COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透 / 抗风噪",
+                noiseControlRes = R.string.noise_anc_off_transparency_wind,
             ),
             SupportEntry(
-                name = "其他 NiceHCK / YuanDao 耳机",
+                nameRes = R.string.model_nicehck_other,
                 evidence = EvidenceLevel.STANDARD_FALLBACK,
                 battery = BatteryCapability.SYSTEM,
-                noiseControl = "无",
+                noiseControlRes = R.string.noise_none,
             ),
         ),
     ),
     SupportBrand(
-        name = "MOONDROP / 水月雨",
+        nameRes = R.string.brand_moondrop,
         entries = listOf(
             SupportEntry(
-                name = "Robin / 知更鸟",
+                nameRes = R.string.model_moondrop_robin,
                 evidence = EvidenceLevel.PUBLIC_IMPLEMENTATION,
                 battery = BatteryCapability.LEFT_RIGHT,
-                noiseControl = "降噪 / 关闭 / 通透",
+                noiseControlRes = R.string.noise_anc_off_transparency,
             ),
             SupportEntry(
-                name = "其他 MOONDROP / 水月雨耳机",
+                nameRes = R.string.model_moondrop_other,
                 evidence = EvidenceLevel.STANDARD_FALLBACK,
                 battery = BatteryCapability.SYSTEM,
-                noiseControl = "无",
+                noiseControlRes = R.string.noise_none,
             ),
         ),
     ),
     SupportBrand(
-        name = "荣耀",
+        nameRes = R.string.brand_honor,
         entries = listOf(
             SupportEntry(
-                name = "荣耀亲选耳机 X5s Pro",
+                nameRes = R.string.model_honor_x5s_pro,
                 evidence = EvidenceLevel.VERIFIED,
                 battery = BatteryCapability.COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透",
+                noiseControlRes = R.string.noise_anc_off_transparency,
             ),
         ),
     ),
     SupportBrand(
-        name = "QCY",
+        nameRes = R.string.brand_qcy,
         entries = listOf(
             SupportEntry(
-                name = "Crossky C50S / QYCC50S",
+                nameRes = R.string.model_qcy_c50s,
                 evidence = EvidenceLevel.PUBLIC_IMPLEMENTATION,
                 battery = BatteryCapability.COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透",
+                noiseControlRes = R.string.noise_anc_off_transparency,
             ),
             SupportEntry(
-                name = "其他名称符合 QCY / Crossky 规则的耳机",
+                nameRes = R.string.model_qcy_other,
                 evidence = EvidenceLevel.FAMILY_PROBE,
                 battery = BatteryCapability.COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透",
+                noiseControlRes = R.string.noise_anc_off_transparency,
             ),
         ),
     ),
     SupportBrand(
-        name = "Sony",
+        nameRes = R.string.brand_sony,
         entries = listOf(
             SupportEntry(
-                name = "WH-1000XM2 / XM3 / XM4、WF-1000XM3 / XM4、WI-SP600N",
+                nameRes = R.string.model_sony_legacy_anc,
                 evidence = EvidenceLevel.PUBLIC_IMPLEMENTATION,
                 battery = BatteryCapability.DEVICE_OR_COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透 / 抗风噪",
+                noiseControlRes = R.string.noise_anc_off_transparency_wind,
             ),
             SupportEntry(
-                name = "WH-1000XM5 / XM6、CH720N、ULT WEAR、WF-1000XM5、SP800N、C700N / C710N、LinkBuds S",
+                nameRes = R.string.model_sony_current_anc,
                 evidence = EvidenceLevel.PUBLIC_IMPLEMENTATION,
                 battery = BatteryCapability.DEVICE_OR_COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透",
+                noiseControlRes = R.string.noise_anc_off_transparency,
             ),
             SupportEntry(
-                name = "WF-C510",
+                nameRes = R.string.model_sony_wfc510,
                 evidence = EvidenceLevel.PUBLIC_IMPLEMENTATION,
                 battery = BatteryCapability.COMPONENT,
-                noiseControl = "关闭 / 通透",
+                noiseControlRes = R.string.noise_off_transparency,
             ),
             SupportEntry(
-                name = "WF-C500 / LinkBuds / WI-C100",
+                nameRes = R.string.model_sony_standard_models,
                 evidence = EvidenceLevel.PUBLIC_IMPLEMENTATION,
                 battery = BatteryCapability.DEVICE_OR_COMPONENT,
-                noiseControl = "无",
+                noiseControlRes = R.string.noise_none,
             ),
             SupportEntry(
-                name = "其他 Sony 降噪产品线",
+                nameRes = R.string.model_sony_other_anc,
                 evidence = EvidenceLevel.FAMILY_PROBE,
                 battery = BatteryCapability.DEVICE_OR_COMPONENT,
-                noiseControl = "降噪 / 关闭 / 通透",
+                noiseControlRes = R.string.noise_anc_off_transparency,
             ),
             SupportEntry(
-                name = "其他 Sony 标准耳机",
+                nameRes = R.string.model_sony_other_standard,
                 evidence = EvidenceLevel.STANDARD_FALLBACK,
                 battery = BatteryCapability.SYSTEM,
-                noiseControl = "无",
+                noiseControlRes = R.string.noise_none,
             ),
         ),
     ),
     SupportBrand(
-        name = "通用蓝牙耳机",
+        nameRes = R.string.brand_generic,
         entries = listOf(
             SupportEntry(
-                name = "标准 A2DP / HFP 耳机",
+                nameRes = R.string.model_generic,
                 evidence = EvidenceLevel.STANDARD_FALLBACK,
                 battery = BatteryCapability.SYSTEM,
-                noiseControl = "无",
+                noiseControlRes = R.string.noise_none,
             ),
         ),
     ),
@@ -355,33 +357,38 @@ private val supportBrands = listOf(
 
 private val projectLinks = listOf(
     ProjectLink(
-        title = "源代码",
-        detail = "github.com/silverpoetry/HyperEars",
+        titleRes = R.string.project_source_code,
+        detailRes = R.string.project_upstream_address,
         url = "https://github.com/silverpoetry/HyperEars",
     ),
     ProjectLink(
-        title = "兼容性文档",
-        detail = "型号、判型、协议与能力矩阵",
+        titleRes = R.string.project_branch_source_code,
+        detailRes = R.string.project_fork_address,
+        url = "https://github.com/binbin323/HyperEars",
+    ),
+    ProjectLink(
+        titleRes = R.string.project_compatibility,
+        detailRes = R.string.project_compatibility_detail,
         url = "https://github.com/silverpoetry/HyperEars/blob/main/docs/compatibility.md",
     ),
     ProjectLink(
-        title = "问题反馈",
-        detail = "提交兼容性问题或功能建议",
-        url = "https://github.com/silverpoetry/HyperEars/issues/new/choose",
+        titleRes = R.string.project_feedback,
+        detailRes = R.string.project_feedback_detail,
+        url = "https://github.com/binbin323/HyperEars/issues/new/choose",
     ),
     ProjectLink(
-        title = "开源许可",
-        detail = "GNU GPL-3.0-only",
+        titleRes = R.string.project_license,
+        detailRes = R.string.project_license_detail,
         url = "https://github.com/silverpoetry/HyperEars/blob/main/LICENSE",
     ),
     ProjectLink(
-        title = "第三方声明",
-        detail = "协议来源与第三方许可",
+        titleRes = R.string.project_third_party,
+        detailRes = R.string.project_third_party_detail,
         url = "https://github.com/silverpoetry/HyperEars/blob/main/THIRD_PARTY_NOTICES.md",
     ),
     ProjectLink(
-        title = "隐私说明",
-        detail = "本地数据处理与权限边界",
+        titleRes = R.string.project_privacy,
+        detailRes = R.string.project_privacy_detail,
         url = "https://github.com/silverpoetry/HyperEars/blob/main/PRIVACY.md",
     ),
 )
@@ -389,7 +396,7 @@ private val projectLinks = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen() {
-    HyperEarsPage(title = "关于") { pagePadding, scrollBehavior ->
+    HyperEarsPage(title = stringResource(R.string.about_title)) { pagePadding, scrollBehavior ->
         val uriHandler = LocalUriHandler.current
         val listState = rememberLazyListState()
 
@@ -409,12 +416,16 @@ fun AboutScreen() {
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     Text(
-                        text = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) · GPL-3.0-only",
+                        text = stringResource(
+                            R.string.about_version,
+                            BuildConfig.VERSION_NAME,
+                            BuildConfig.VERSION_CODE,
+                        ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        text = "为第三方蓝牙耳机补充 HyperOS 与 MiLink 系统集成。",
+                        text = stringResource(R.string.about_summary),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -428,7 +439,7 @@ fun AboutScreen() {
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     Text(
-                        text = "所有条目均支持设备流转和系统音量。下方列出电量与噪声控制；私有能力在协议确认后开放。",
+                        text = stringResource(R.string.about_support_introduction),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -437,7 +448,7 @@ fun AboutScreen() {
         }
         items(
             items = supportBrands,
-            key = SupportBrand::name,
+            key = SupportBrand::nameRes,
         ) { brand ->
             CenteredContent { modifier ->
                 BrandSupportCard(brand = brand, modifier = modifier)
@@ -459,8 +470,10 @@ fun AboutScreen() {
                         Column {
                             projectLinks.forEachIndexed { index, link ->
                                 ListItem(
-                                    headlineContent = { Text(link.title) },
-                                    supportingContent = { Text(link.detail) },
+                                    headlineContent = { Text(stringResource(link.titleRes)) },
+                                    supportingContent = {
+                                        Text(stringResource(link.detailRes))
+                                    },
                                     colors = ListItemDefaults.colors(
                                         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                                     ),
@@ -483,7 +496,7 @@ fun AboutScreen() {
             item(key = "copyright") {
                 CenteredContent { modifier ->
                     Text(
-                        text = "© 2026 HyperEars contributors\n产品名称与商标归各自权利人所有。",
+                        text = stringResource(R.string.about_copyright),
                         modifier = modifier,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -518,7 +531,7 @@ private fun BrandSupportCard(
     ) {
         Column {
             Text(
-                text = brand.name,
+                text = stringResource(brand.nameRes),
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
@@ -551,19 +564,23 @@ private fun SupportRow(entry: SupportEntry) {
             verticalAlignment = Alignment.Top,
         ) {
             Text(
-                text = entry.name,
+                text = stringResource(entry.nameRes),
                 modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
             )
             Text(
-                text = entry.evidence.label,
+                text = stringResource(entry.evidence.labelRes),
                 style = MaterialTheme.typography.labelMedium,
                 color = evidenceColor(entry.evidence),
             )
         }
         Text(
-            text = "电量：${entry.battery.label} · 噪声：${entry.noiseControl}",
+            text = stringResource(
+                R.string.about_support_detail,
+                stringResource(entry.battery.labelRes),
+                stringResource(entry.noiseControlRes),
+            ),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

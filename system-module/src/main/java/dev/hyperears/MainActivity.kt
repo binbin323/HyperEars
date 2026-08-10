@@ -68,7 +68,8 @@ class MainActivity : ComponentActivity() {
             )
             Toast.makeText(
                 this@MainActivity,
-                if (result.success) "日志已导出" else "日志导出失败",
+                if (result.success) R.string.toast_logs_exported
+                else R.string.toast_log_export_failed,
                 Toast.LENGTH_SHORT,
             ).show()
         }
@@ -306,7 +307,7 @@ class MainActivity : ComponentActivity() {
                 enabled = settings.value.diagnosticLogging,
                 component = "QuickControl",
                 message = buildString {
-                    append(action.title)
+                    append(action.name)
                     append(" · success=")
                     append(result.success)
                     append('\n')

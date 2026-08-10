@@ -1,34 +1,35 @@
 package dev.hyperears.root
 
+import dev.hyperears.R
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 
 enum class RootAction(
-    val title: String,
-    val detail: String,
+    val titleRes: Int,
+    val detailRes: Int,
     val command: String,
     val verificationCommand: String,
     val verificationSuccess: (String) -> Boolean,
 ) {
     RESTART_MILINK(
-        title = "重启 MiLink",
-        detail = "停止 MiLink；再次打开融合设备中心时由系统启动。",
+        titleRes = R.string.root_restart_milink,
+        detailRes = R.string.root_restart_milink_detail,
         command = "am force-stop com.milink.service",
         verificationCommand = "pidof com.milink.service || true",
         verificationSuccess = String::isBlank,
     ),
     RESTART_BLUETOOTH(
-        title = "重启蓝牙",
-        detail = "重新启动蓝牙，已连接设备会暂时断开。",
+        titleRes = R.string.root_restart_bluetooth,
+        detailRes = R.string.root_restart_bluetooth_detail,
         command = "svc bluetooth disable; sleep 1; svc bluetooth enable",
         verificationCommand = "settings get global bluetooth_on",
         verificationSuccess = { it.trim() == "1" },
     ),
     STOP_VENDOR_APPS(
-        title = "停止厂商应用",
-        detail = "停止受支持的厂商应用，并恢复 HyperEars 控制。",
+        titleRes = R.string.root_stop_vendor_apps,
+        detailRes = R.string.root_stop_vendor_apps_detail,
         command = "for p in " +
             "com.vivo.vivotws com.heytap.headset com.oplus.melody " +
             "com.coloros.oppopods com.bose.bosemusic com.bose.monet " +
@@ -65,7 +66,7 @@ internal object RootCommandRunner {
             return RootActionState.Finished(
                 action = action,
                 success = false,
-                detail = result.describe("执行"),
+                detail = result.describe(RootCommandStage.EXECUTION),
             )
         }
         val verification = RootShell.execute(action.verificationCommand)
@@ -74,9 +75,9 @@ internal object RootCommandRunner {
             action = action,
             success = verified,
             detail = buildString {
-                append(result.describe("执行"))
+                append(result.describe(RootCommandStage.EXECUTION))
                 append('\n')
-                append(verification.describe("验证"))
+                append(verification.describe(RootCommandStage.VERIFICATION))
             },
         )
     }
@@ -89,8 +90,8 @@ internal data class RootCommandResult(
     val success: Boolean
         get() = exitCode == 0
 
-    fun describe(stage: String): String = buildString {
-        append(stage)
+    fun describe(stage: RootCommandStage): String = buildString {
+        append(stage.logLabel)
         append(" exit=")
         append(exitCode?.toString() ?: "timeout")
         if (output.isNotBlank()) {
@@ -117,7 +118,7 @@ internal object RootShell {
             if (!completed) {
                 process.destroyForcibly()
                 outputReader.cancel()
-                return@runCatching RootCommandResult(null, "命令执行超时")
+                return@runCatching RootCommandResult(null, "Command timed out")
             }
             RootCommandResult(process.exitValue(), outputReader.await())
         }.getOrElse { error ->
@@ -126,4 +127,10 @@ internal object RootShell {
     }
 
     private const val DEFAULT_TIMEOUT_SECONDS = 12L
+}
+
+internal enum class RootCommandStage(val logLabel: String) {
+    EXECUTION("execution"),
+    VERIFICATION("verification"),
+    READ("read"),
 }

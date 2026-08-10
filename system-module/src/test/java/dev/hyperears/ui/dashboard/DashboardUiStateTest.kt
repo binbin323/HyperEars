@@ -10,6 +10,7 @@ import dev.hyperears.integration.ProtocolHandshakeState
 import dev.hyperears.integration.StandardEarbudAdapter
 import dev.hyperears.integration.SystemProfileState
 import dev.hyperears.integration.VivoEarbudAdapter
+import dev.hyperears.ui.UiText
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -89,8 +90,8 @@ class DashboardUiStateTest {
 
         val card = DeviceSessionUiProjector.project(session)
 
-        assertEquals("Custom Bluetooth Name", card.deviceName)
-        assertEquals(adapter.displayName, card.adapterName)
+        assertEquals(UiText.Dynamic("Custom Bluetooth Name"), card.deviceName)
+        assertEquals(UiText.Dynamic(adapter.displayName), card.adapterName)
         assertEquals(adapter.id, card.adapterId)
         assertTrue(card.adapterResolved)
         assertEquals(4, card.headsetLifecycle.size)

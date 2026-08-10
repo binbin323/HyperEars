@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Build
 import dev.hyperears.BuildConfig
 import dev.hyperears.root.RootShell
+import dev.hyperears.root.RootCommandStage
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
@@ -76,16 +77,20 @@ internal object DiagnosticLogExporter {
                 } else {
                     ""
                 },
-                lsposedError = if (lsposedResult.success) null else lsposedResult.describe("读取"),
+                lsposedError = if (lsposedResult.success) {
+                    null
+                } else {
+                    lsposedResult.describe(RootCommandStage.READ)
+                },
                 appLog = AppDiagnosticLog.read(context),
             )
             val output = requireNotNull(context.contentResolver.openOutputStream(destination, "w")) {
-                "无法打开导出位置"
+                "Unable to open export destination"
             }
             output.bufferedWriter(Charsets.UTF_8).use { writer ->
                 writer.write(report.render())
             }
-            DiagnosticExportResult(true, "日志已导出")
+            DiagnosticExportResult(true, "Logs exported")
         }.getOrElse { error ->
             DiagnosticExportResult(false, error.message ?: error.javaClass.simpleName)
         }
