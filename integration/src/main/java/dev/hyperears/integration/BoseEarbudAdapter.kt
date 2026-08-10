@@ -123,8 +123,13 @@ open class BoseEarbudAdapter(
             "soundsport",
         )
 
-        /** Bose-owned OUI observed on the locally captured QuietComfort Headphones. */
-        private val BOSE_OUIS = setOf("BC:87:FA")
+        /** Bose-owned OUIs observed on supported Bose headsets. */
+        private val BOSE_OUIS = setOf(
+            "04:52:C7",
+            "60:AB:D2",
+            "78:2B:64",
+            "BC:87:FA",
+        )
     }
 }
 

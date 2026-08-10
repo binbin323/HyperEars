@@ -38,6 +38,39 @@ class EarbudAdapterHierarchyTest {
     }
 
     @Test
+    fun boseOuiPrefixesSelectTheBoseFamily() {
+        listOf(
+            "04:52:C7:00:00:01",
+            "60:ab:d2:00:00:02",
+            "78:2B:64:00:00:03",
+        ).forEach { address ->
+            val adapter = EarbudAdapterRegistry.resolve(
+                EarbudIdentity(
+                    deviceName = "Unknown headset",
+                    standardHeadset = true,
+                    deviceAddress = address,
+                ),
+            )
+
+            assertTrue("$address should select Bose", adapter is BoseEarbudAdapter)
+            assertEquals(BoseEarbudAdapter.ID, adapter?.id)
+        }
+    }
+
+    @Test
+    fun boseOuiDoesNotOverrideTheStandardHeadsetRequirement() {
+        assertFalse(
+            BoseEarbudAdapter().matches(
+                EarbudIdentity(
+                    deviceName = "Unknown device",
+                    standardHeadset = false,
+                    deviceAddress = "04:52:C7:00:00:01",
+                ),
+            ),
+        )
+    }
+
+    @Test
     fun registryExposesOneStableGroupForEveryAdapter() {
         val adapters = EarbudAdapterRegistry.adapters
         val groups = EarbudAdapterRegistry.groups
