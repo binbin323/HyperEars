@@ -38,6 +38,20 @@ class EarbudAdapterHierarchyTest {
     }
 
     @Test
+    fun oppoOuiPrefixSelectsTheOppoFamily() {
+        val adapter = EarbudAdapterRegistry.resolve(
+            EarbudIdentity(
+                deviceName = "Unknown headset",
+                standardHeadset = true,
+                deviceAddress = "60:55:56:00:00:01",
+            ),
+        )
+
+        assertEquals(OppoEarbudAdapter.ID, adapter?.id)
+        assertFalse(requireNotNull(adapter).snapshot().capabilities.noiseControl)
+    }
+
+    @Test
     fun boseOuiPrefixesSelectTheBoseFamily() {
         listOf(
             "04:52:C7:00:00:01",

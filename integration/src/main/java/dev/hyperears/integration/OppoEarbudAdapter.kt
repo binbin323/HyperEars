@@ -1,6 +1,7 @@
 package dev.hyperears.integration
 
 import dev.hyperears.protocol.oppo.OppoWireCodec
+import java.util.Locale
 
 /**
  * Shared OPPO Enco family adapter.
@@ -34,7 +35,10 @@ open class OppoEarbudAdapter : StandardEarbudAdapter() {
     override fun matches(identity: EarbudIdentity): Boolean {
         if (!identity.standardHeadset || identity.nativeSystemEarbud) return false
         val name = normalizeDeviceName(identity.deviceName.orEmpty())
-        return name.contains("oppo") || name.contains("enco")
+        val oui = identity.deviceAddress
+            ?.uppercase(Locale.ROOT)
+            ?.take(8)
+        return name.contains("oppo") || name.contains("enco") || oui in OPPO_OUIS
     }
 
     override fun createProtocolSession(): ProtocolSession =
@@ -43,6 +47,7 @@ open class OppoEarbudAdapter : StandardEarbudAdapter() {
     companion object {
         const val ID = "oppo-enco-family"
         const val OPPO_RFCOMM_UUID = "0000079a-d102-11e1-9b23-00025b00a5a5"
+        private val OPPO_OUIS = setOf("60:55:56")
     }
 }
 
